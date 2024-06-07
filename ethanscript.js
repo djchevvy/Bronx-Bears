@@ -226,6 +226,7 @@
     }
     return closestTSK
   }
+  //function decides which months should be added to array currentMonthTasks, and pushes them to the array for the passed current date (currentMonth, currentYear)
   function generateCurrentMonthEvents(allEventsArr, month, year) {
     if (allEventsArr.length === 0) {
       return
@@ -263,7 +264,8 @@
       if (startMonth === months[month] && parseInt(startYear) === year || endMonth === months[month] && parseInt(endYear) === year
         || startMonthNum == month && endMonthNum == startMonthNum && parseInt(startYear) === year && eventOnPage
         || startMonthNum == month + 2 && startMonthNum == endMonthNum && parseInt(endYear) == year && eventOnPage
-        || month == 11 && eventOnPage && startMonthNum == 1 && year + 1 == startYear) {
+        || month == 11 && eventOnPage && startMonthNum == 1 && year + 1 == startYear
+        || Math.abs(startMonthNum-endMonthNum) >= 2 && month+1 >= startMonthNum && month+1 <= endMonthNum && parseInt(startYear) >= year && parseInt(endYear) <= year) {
         currentMonthEvents.push(allEventsArr[i])
         let title = allEventsArr[i].querySelector(".event-name").textContent
         let desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
