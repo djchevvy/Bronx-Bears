@@ -76,6 +76,7 @@
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
   });
   document.getElementById('prev-event').addEventListener('click', () => {
+    if(currentMonthTasks.length == 0){return}
     if (currentEventIndex == 0) {
       currentEventIndex = currentMonthTasks.length - 1
       generateDetailedView(currentMonthTasks[currentEventIndex])
@@ -87,6 +88,7 @@
     }
   });
   document.getElementById('next-event').addEventListener('click', () => {
+    if(currentMonthTasks.length == 0){return}
     currentEventIndex++;
     if (currentEventIndex <= currentMonthTasks.length - 1) {
       generateDetailedView(currentMonthTasks[currentEventIndex])
@@ -310,17 +312,17 @@
       endMonthNum = endMonthNum.getMonth() + 1
       //case 1 span same row in same month/year (multiday and single day)
       //if event exists on same row of month and same month and year || event exists on same month grid, but is exclusively in prev/nxt month (first or last row only) || edge case december to january last row event (exists only in jan)
-      if ((getRowOfDate(startMonth, startDay, startYear) == getRowOfDate(endMonth, endDay, endYear) && (startMonth === endMonth) && (startYear === endYear) && currentMonth == startMonthNum - 1) 
-      || (currentMonth + 2 == startMonthNum && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear) && startMonth == endMonth 
-      || (currentMonth == startMonthNum && document.getElementById(`${startYear}-${endMonthNum}-${endDay}`) != null && parseInt(startYear) == currentYear && startMonth == endMonth) 
-      || (endMonthNum == 1 && currentMonth == 11 && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear + 1) && startMonth == endMonth) {
+      if ((getRowOfDate(startMonth, startDay, startYear) == getRowOfDate(endMonth, endDay, endYear) && (startMonth === endMonth) && (startYear === endYear) && currentMonth == startMonthNum - 1)
+        || (currentMonth + 2 == startMonthNum && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear) && startMonth == endMonth
+        || (currentMonth == startMonthNum && document.getElementById(`${startYear}-${endMonthNum}-${endDay}`) != null && parseInt(startYear) == currentYear && startMonth == endMonth)
+        || (endMonthNum == 1 && currentMonth == 11 && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear + 1) && startMonth == endMonth) {
         let daysInLastMonth = new Date(parseInt(startYear), currentMonth, 0).getDate()
-        let firstOfCurMonthInd = new Date(`${startYear}-${currentMonth+1}-1`).getDay()
+        let firstOfCurMonthInd = new Date(`${startYear}-${currentMonth + 1}-1`).getDay()
         let firstDayLastMonth = daysInLastMonth - firstOfCurMonthInd + 1
         //formats multi-day banner
         //alt width calc for edge case nxt month exclusive event
-        if ((currentMonth + 2 == startMonthNum && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear) && startMonth == endMonth 
-        || (endMonthNum == 1 && currentMonth == 11 && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear + 1) && startMonth == endMonth) {
+        if ((currentMonth + 2 == startMonthNum && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear) && startMonth == endMonth
+          || (endMonthNum == 1 && currentMonth == 11 && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear + 1) && startMonth == endMonth) {
           let saveEndD = endDay
           for (let i = startDay; i < saveEndD; i++) {
             if (document.getElementById(`${startYear}-${startMonthNum}-${i}`) != null) {
@@ -780,7 +782,7 @@
 
       }//end MULTI-MONTH EVENTS in same year case 2
 
-
+      
       //NEW BANNER PLACEMENT CODE
       //place banners
       for (let i = 0; i < currentEventBannerDivs.length; i++) {
