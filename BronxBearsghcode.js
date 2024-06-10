@@ -171,7 +171,7 @@ function generateCalendar(month, year) {
 }//end function generate calendar
 
 function generateDetailedView(eventTask) {
-    if (eventTask.getName() === "There are currenly no Events to display") {
+    if (eventTask.getName() === "There are currently no Events to display") {
         var parentDiv = document.getElementById('detailedview-event-details')
         parentDiv.innerHTML = ""
         var titleDiv = document.createElement("div")
@@ -213,7 +213,7 @@ function generateDetailedView(eventTask) {
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
-        var emptyTSK = new Task("There are currenly no Events to display", "none", "none", "none", "none", "none")
+        var emptyTSK = new Task("There are currently no Events to display", "none", "none", "none", "none", "none")
         return emptyTSK
     }
     for (let i = 0; i < list.length; i++) {
@@ -1125,6 +1125,7 @@ function placeEvents(events) {
                         let k = breakPTArr[i] + 1
                         if (Math.abs(endDay - breakPTArr[i]) > 0) {
                             for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
+                                daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                                 if (k > daysInCurentMonth) {
                                     tempCurMonth = endMonthNum
                                     tempCurYear = endYear
