@@ -797,7 +797,7 @@ function placeEvents(events) {
                 totalDays = getTotalDays(startYear, startMonthNum)
                 numRows = totalDays / 7 - 1
                 let daysInCurentMonth = new Date(parseInt(startYear), startMonthNum, 0).getDate() //# of days in specified month/year
-                let firstDayIndEndMonth = new Date(`${startMonthNum + 1} 1, ${endYear}`).getDay() //0 = sunday 6 = saturday
+                let firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
                 //need to treat this as extension of prev-month days to get correct length
                 let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
                 let endDayNum = parseInt(endDay) + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
@@ -840,6 +840,7 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
+                        if(firstDayInd)
                         var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
@@ -1036,6 +1037,23 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
+                        //first of month is first day of grid, start in cur month; else start in prev month
+                        if (firstDayIndCurMonth == 0) {
+                            tempCurMonth = currentMonth + 1
+                            tempCurYear = currentYear
+                        }
+                        else {
+                            //edge case december -> january
+                            if (tempCurMonth == 1 && tempCurYear != startYear) {
+                                tempCurMonth = 12
+                                tempCurYear = currentYear - 1
+                            }
+                            //every other month boudary: starting in prev-month on current month page
+                            else {
+                                tempCurMonth = currentMonth //0 indexed, so technically last month
+                                tempCurYear = currentYear
+                            }
+                        }
                         var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
@@ -1050,8 +1068,7 @@ function placeEvents(events) {
                         currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
 
                         //adding blank dates to blankDates array
-                        tempCurMonth = currentMonth + 1
-                        tempCurYear = currentYear
+                        
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
                             if (k > daysInCurentMonth) {
