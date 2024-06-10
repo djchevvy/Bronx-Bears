@@ -1,4 +1,5 @@
 
+<script>
 class Task {
     constructor(name, desc, date, endDate, imgSrc, index) {
         this.name = name
@@ -373,7 +374,6 @@ function placeEvents(events) {
             //find breakpoint day
             for (let i = parseInt(startDay) + 1; i <= parseInt(endDay); i++) {
                 if (getRowOfDate(startMonth, i, startYear) != currentRow) {
-                    let breakDate = `${startYear}-${startMonthNum}-${i}`
                     breakPTArr[breakInd] = i
                     spanNextRow[spanInd] = i - 1
                     spanInd++
@@ -539,7 +539,6 @@ function placeEvents(events) {
                         tempCurMonthNum = endMonthNum
                     }
                     if (getRowOfDate(months[tempCurMonthNum - 1], j, tempCurYear, endYear) != currentRow && tempCurMonthNum == endMonthNum) {
-                        let breakDate = `${tempCurYear}-${endMonthNum}-${j}`
                         breakPTArr[breakInd] = j
                         spanNextRow[spanInd] = j - 1
                         spanInd++
@@ -678,7 +677,6 @@ function placeEvents(events) {
                 //find breakpoint day
                 for (let i = parseInt(startDay) + 1; i <= parseInt(endDay); i++) {
                     if (getRowOfDate(startMonth, i, startYear) != currentRow) {
-                        let breakDate = `${startYear}-${startMonthNum}-${i}`
                         breakPTArr[breakInd] = i
                         spanNextRow[spanInd] = i - 1
                         spanInd++
@@ -812,12 +810,15 @@ function placeEvents(events) {
                 for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
                     if (getRowOfDate(startMonth, i, startYear) != currentRow) {
                         if (k > daysInCurentMonth) {
-                            tempCurMonth++
-                            //needs rework for multi-year tempCurYear = endYear
+                            if(tempCurMonth == 12){
+                                tempCurMonth = 1
+                                tempCurYear++
+                            }else{
+                                tempCurMonth++
+                            }
                             k = 1
                             daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                         }
-                        let breakDate = `${tempCurYear}-${tempCurMonth}-${k}`
                         breakPTArr[breakInd] = k
                         spanNextRow[spanInd] = k - 1
                         spanInd++
@@ -857,9 +858,6 @@ function placeEvents(events) {
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
                             k++
                         }
-                        if (singleRowCalc) {
-                            break
-                        }
                     }
                     //ith row
                     if (i + 1 < breakPTArr.length) {
@@ -884,7 +882,6 @@ function placeEvents(events) {
                             }
                         }
                     }
-
                     //last row
                     else {
                         var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
@@ -918,11 +915,11 @@ function placeEvents(events) {
                         }
                     }
                 }//end assembling banners for
-            }
+            }//end if: EVENT AT BEGINING MONTH
             //event is in middle month of multi-month event
             else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum) {
 
-            }
+            }//end else if inside CASE 3 MIDDLE MONTH
             //event is in endMonth of multi-month event
             else {
 
@@ -1243,3 +1240,4 @@ function heapSort(eventsArr) {
     }//end while
     return sortedList;
 }//end heapsort function
+</script>
