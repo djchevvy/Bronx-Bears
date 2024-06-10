@@ -1012,21 +1012,21 @@ function placeEvents(events) {
                 for (let i = 0; i < daysBtw; i++) {
                     let a = getRowOfDate(months[currentMonth], k, currentYear)
                     if (a != currentRow && a != -1 && tempCurMonth == currentMonth + 1) {
-                        if (k > daysInCurentMonth) {
-                            if (tempCurMonth == 12) {
-                                tempCurMonth = 1
-                                tempCurYear++
-                            } else {
-                                tempCurMonth++
-                            }
-                            k = 1
-                            daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
-                        }
                         breakPTArr[breakInd] = k
                         spanNextRow[spanInd] = k - 1
                         spanInd++
                         breakInd++
                         currentRow++
+                    }
+                    if (k > daysInCurentMonth) {
+                        if (tempCurMonth == 12) {
+                            tempCurMonth = 1
+                            tempCurYear++
+                        } else {
+                            tempCurMonth++
+                        }
+                        k = 1
+                        daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                     }
                     k++
                 }//end for -breakpoints
@@ -1164,42 +1164,43 @@ function placeEvents(events) {
                     }
                 }
 
-                
+
                 let k = parseInt(startDay) + 1
                 //have to use Date obj here to account for many scenarios
                 let daysBtw = 0   //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
-                let a= 0 //start date
+                let a = 0 //start date
                 let a1 = 0  //end date
                 //start and end date are in same month
-                if(firstDayIndCurMonth === 0){
+                if (firstDayIndCurMonth === 0) {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
                     a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
                 }
-                else{
+                else {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    a1 = new Date(`${tempCurYear}-${tempCurMonth+1}-${endDay}`)
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth + 1}-${endDay}`)
                 }
                 daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
 
                 //find breakpoint days for each row
                 for (let i = 0; i < daysBtw; i++) {
-                    let a = getRowOfDate(months[tempCurMonth-1], k, currentYear)
+                    let a = getRowOfDate(months[tempCurMonth - 1], k, currentYear)
                     daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
-                    if (a != currentRow && a != -1 && currentMonth+1 == tempCurMonth) {
-                        if (k > daysInCurentMonth) {
-                            if (tempCurMonth == 12) {
-                                tempCurMonth = 1
-                                tempCurYear++
-                            } else {
-                                tempCurMonth++
-                            }
-                            k = 1
-                        }
+                    if (a != currentRow && a != -1 && currentMonth + 1 == tempCurMonth) {
+
                         breakPTArr[breakInd] = k
                         spanNextRow[spanInd] = k - 1
                         spanInd++
                         breakInd++
                         currentRow++
+                    }
+                    if (k > daysInCurentMonth) {
+                        if (tempCurMonth == 12) {
+                            tempCurMonth = 1
+                            tempCurYear++
+                        } else {
+                            tempCurMonth++
+                        }
+                        k = 1
                     }
                     k++
                 }//end for -breakpoints
