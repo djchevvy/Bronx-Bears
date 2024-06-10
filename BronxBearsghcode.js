@@ -979,16 +979,32 @@ function placeEvents(events) {
                 let k = parseInt(startDay) + 1
                 //have to use Date obj here to account for many scenarios
                 let daysBtw = 0  //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                let a = 0
+                let a1 = 0
 
                 //january edge case: years will be one apart
                 if (currentMonth == 0) {
-                    let a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    let a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
                 else {
-                    let a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    let a1 = new Date(`${tempCurYear}-1-${endDay}`)
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    //we have extended endDay in current month, but it really belongs to nxt month
+                    if (endDay > daysInCurentMonth) {
+                        //december edge case
+                        if(currentMonth == 11){
+                            a1 = new Date(`${tempCurYear}-1-${endDay - daysInCurentMonth}`)
+                        }
+                        else{
+                            a1 = new Date(`${tempCurYear}-${currentMonth+2}-${endDay - daysInCurentMonth}`)
+                        }
+                    }
+                    //event ends in current month
+                    else {
+                        a1 = new Date(`${tempCurYear}-${currentMonth+1}-${endDay}`)
+                    }
+
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
 
@@ -1152,16 +1168,32 @@ function placeEvents(events) {
                 let k = parseInt(startDay) + 1
                 //have to use Date obj here to account for many scenarios
                 let daysBtw = 0  //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                let a = 0 //start date
+                let a1 = 0 //end date
 
                 //january edge case: years will be one apart
                 if (currentMonth == 0) {
-                    let a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    let a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
                 else {
-                    let a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    let a1 = new Date(`${tempCurYear}-1-${endDay}`)
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    //if starting in prev-month; change end days to be 1 indexed
+                    if (endDay > daysInCurentMonth) {
+                        //december edge case
+                        if(currentMonth == 11){
+                            a1 = new Date(`${tempCurYear}-1-${endDay - daysInCurentMonth}`)
+                        }
+                        else{
+                            a1 = new Date(`${tempCurYear}-${currentMonth+2}-${endDay - daysInCurentMonth}`)
+                        }
+                    }
+                    //ending in current month normal case
+                    else {
+                        a1 = new Date(`${tempCurYear}-${currentMonth+1}-${endDay}`)
+                    }
+
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
 
