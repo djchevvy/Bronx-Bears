@@ -993,16 +993,16 @@ function placeEvents(events) {
                     //we have extended endDay in current month, but it really belongs to nxt month
                     if (endDay > daysInCurentMonth) {
                         //december edge case
-                        if(currentMonth == 11){
+                        if (currentMonth == 11) {
                             a1 = new Date(`${tempCurYear}-1-${endDay - daysInCurentMonth}`)
                         }
-                        else{
-                            a1 = new Date(`${tempCurYear}-${currentMonth+2}-${endDay - daysInCurentMonth}`)
+                        else {
+                            a1 = new Date(`${tempCurYear}-${currentMonth + 2}-${endDay - daysInCurentMonth}`)
                         }
                     }
                     //event ends in current month
                     else {
-                        a1 = new Date(`${tempCurYear}-${currentMonth+1}-${endDay}`)
+                        a1 = new Date(`${tempCurYear}-${currentMonth + 1}-${endDay}`)
                     }
 
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
@@ -1011,7 +1011,7 @@ function placeEvents(events) {
 
                 for (let i = 0; i < daysBtw; i++) {
                     let a = getRowOfDate(months[currentMonth], k, currentYear)
-                    if (a != currentRow && a != -1 && tempCurMonth == endMonthNum) {
+                    if (a != currentRow && a != -1 && tempCurMonth == currentMonth + 1) {
                         if (k > daysInCurentMonth) {
                             if (tempCurMonth == 12) {
                                 tempCurMonth = 1
@@ -1164,44 +1164,28 @@ function placeEvents(events) {
                     }
                 }
 
-                //find breakpoint days
+                
                 let k = parseInt(startDay) + 1
                 //have to use Date obj here to account for many scenarios
-                let daysBtw = 0  //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
-                let a = 0 //start date
-                let a1 = 0 //end date
-
-                //january edge case: years will be one apart
-                if (currentMonth == 0) {
+                let daysBtw = 0   //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                let a= 0 //start date
+                let a1 = 0  //end date
+                //start and end date are in same month
+                if(firstDayIndCurMonth === 0){
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
-                    daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
                 }
-                else {
+                else{
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    //if starting in prev-month; change end days to be 1 indexed
-                    if (endDay > daysInCurentMonth) {
-                        //december edge case
-                        if(currentMonth == 11){
-                            a1 = new Date(`${tempCurYear}-1-${endDay - daysInCurentMonth}`)
-                        }
-                        else{
-                            a1 = new Date(`${tempCurYear}-${currentMonth+2}-${endDay - daysInCurentMonth}`)
-                        }
-                    }
-                    //ending in current month normal case
-                    else {
-                        a1 = new Date(`${tempCurYear}-${currentMonth+1}-${endDay}`)
-                    }
-
-                    daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth+1}-${endDay}`)
                 }
+                daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
 
-
+                //find breakpoint days for each row
                 for (let i = 0; i < daysBtw; i++) {
-                    let a = getRowOfDate(months[currentMonth], k, currentYear)
+                    let a = getRowOfDate(months[tempCurMonth-1], k, currentYear)
                     daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
-                    if (a != currentRow && a != -1) {
+                    if (a != currentRow && a != -1 && currentMonth+1 == tempCurMonth) {
                         if (k > daysInCurentMonth) {
                             if (tempCurMonth == 12) {
                                 tempCurMonth = 1
@@ -1210,7 +1194,6 @@ function placeEvents(events) {
                                 tempCurMonth++
                             }
                             k = 1
-                            daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                         }
                         breakPTArr[breakInd] = k
                         spanNextRow[spanInd] = k - 1
@@ -1228,20 +1211,20 @@ function placeEvents(events) {
                     if (i == 0) {
                         let sDate = 0 //start date OBJ
                         let eDate = 0 //end date OBJ
-                        //first of month is first day of grid
-                        if(firstDayIndCurMonth == 0){
+                        //first of month is first day of grid, start in cur month; else start in prev month
+                        if (firstDayIndCurMonth == 0) {
                             tempCurMonth = currentMonth + 1
                             tempCurYear = currentYear
                         }
-                        else{
+                        else {
                             //edge case december -> january
-                            if(tempCurMonth == 1 && tempCurYear != startYear){
+                            if (tempCurMonth == 1 && tempCurYear != startYear) {
                                 tempCurMonth = 12
                                 tempCurYear = currentYear - 1
                             }
                             //every other month boudary: starting in prev-month on current month page
-                            else{
-                                tempCurMonth = currentMonth-1
+                            else {
+                                tempCurMonth = currentMonth //0 indexed, so technically last month
                                 tempCurYear = currentYear
                             }
                         }
@@ -1259,22 +1242,15 @@ function placeEvents(events) {
                         currentEventBannerDivs.push(tempDiv)
 
                         //adding to banner dates array (here is just start day)
-                        //if banner starts in current month, first day will be 0 ind
-                        if(firstDayIndCurMonth == 0){
-                            currentEventBannerDates.push(`${tempCurYear}-${endMonthNum}-${startDay}`)
+                        //edge case december -> january
+                        if (tempCurMonth == 1 && tempCurYear != startYear) {
+                            currentEventBannerDates.push(`${tempCurYear - 1}-${tempCurMonth}-${startDay}`)
                         }
-                        //else banner starts in last month
-                        else{
-                            //edge case december -> january
-                            if(tempCurMonth == 1 && tempCurYear != startYear){
-                                currentEventBannerDates.push(`${tempCurYear-1}-${endMonthNum-1}-${startDay}`)
-                            }
-                            //else just starting in last month
-                            else{
-                                currentEventBannerDates.push(`${tempCurYear}-${endMonthNum-1}-${startDay}`)
-                            }
+                        //else normal push
+                        else {
+                            currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
                         }
-                        
+
                         //adding blank dates to blankDates array
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < rowZeroDayDiff; j++) {
