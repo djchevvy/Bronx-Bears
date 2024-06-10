@@ -925,7 +925,7 @@ function placeEvents(events) {
                 }//end assembling banners for
             }//end if: EVENT AT BEGINING MONTH
             //event is in middle month of multi-month event
-            else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum || currentMonth + 1 === endMonth && currentYear === parseInt(endYear)) {
+            else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum || currentMonth + 1 === endMonthNum && currentYear === parseInt(endYear)) {
                 //Event can either end on this monthView (in nxt month days), or end on next monthView
                 //Event ends on current monthview pg in nxt Month days; edited CASE 2
                 //these vars month and year are used throughout this else if case to keep track of correct month and year
