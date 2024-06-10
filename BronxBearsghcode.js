@@ -921,12 +921,12 @@ function placeEvents(events) {
                 }//end assembling banners for
             }//end if: EVENT AT BEGINING MONTH
             //event is in middle month of multi-month event
-            else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum || currentMonth+1 === endMonth && currentYear === parseInt(endYear)) {
+            else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum || currentMonth + 1 === endMonth && currentYear === parseInt(endYear)) {
                 //Event can either end on this monthView (in nxt month days), or end on next monthView
                 //Event ends on current monthview pg in nxt Month days; edited CASE 2
 
                 let numRows = 0
-                let currentRow = getRowOfDate(startMonth, startDay, startYear)
+                let currentRow = 0 //always spaning into middle, or end month at first row
                 let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
                 let breakInd = 0 //index 0 is the first breakpt to next row
                 let spanNextRow = [] //array to hold last day of event spanning banner in 1 row; stores day(s) before row ends
@@ -939,7 +939,7 @@ function placeEvents(events) {
                 let firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
                 let firstDayIndCurMonth = new Date(`${currentMonth + 1} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
                 let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
-                let endDayNum = parseInt(endDay) + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
+                let endDayNum = 7 - firstDayIndEndMonth + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
                 let savedEndDay = endDay
                 let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
                 //calculate endDay: if first of nxt month is not on page, end-day = last of cur month
@@ -964,7 +964,7 @@ function placeEvents(events) {
                 let tempCurYear = currentYear
                 let k = parseInt(startDay) + 1
                 for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
-                    if (getRowOfDate(startMonth, k, startYear) != currentRow) {
+                    if (getRowOfDate(months[currentMonth + 1], k, currentYear) != currentRow) {
                         if (k > daysInCurentMonth) {
                             if (tempCurMonth == 12) {
                                 tempCurMonth = 1
@@ -1233,17 +1233,21 @@ function getRowOfDate(month, day, year, endYear = year) {
     let daysInLastMonth = new Date(year, monthNum - 1, 0).getDate();
     let totalDays = firstDayIndex + monthDays
     let rowCount = Math.ceil(totalDays / 7)
-    let rowInd = 0
+    let rowInd = -1 //for return on invalid dates
     const firstDayOfLastMonth = new Date(year, monthNum - 1, 1).getDay()
     const daysFromLastMonth = (firstDayOfLastMonth < 0) ? firstDayOfLastMonth + 7 : firstDayOfLastMonth;
-    for (let i = 0; i < rowCount * 7; i++) {
-        if (i == parseInt(day) + daysFromLastMonth) {
-            break;
-        }
-        if (i % 7 == 0 && i != 0) {
-            rowInd++
+    if (day <= monthDays) {
+        for (let i = 0; i < rowCount * 7; i++) {
+            if (i == parseInt(day) + daysFromLastMonth) {
+                break;
+            }
+            if (i % 7 == 0 && i != 0) {
+                rowInd++
+            }
         }
     }
+
+    //returns -1 if calculations are incorrect
     return rowInd
 }
 //dynamically generates detailedView date banner; takes paramters start and end date in format "May 9, 2024"
