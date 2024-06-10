@@ -928,6 +928,9 @@ function placeEvents(events) {
             else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum || currentMonth + 1 === endMonth && currentYear === parseInt(endYear)) {
                 //Event can either end on this monthView (in nxt month days), or end on next monthView
                 //Event ends on current monthview pg in nxt Month days; edited CASE 2
+                //these vars month and year are used throughout this else if case to keep track of correct month and year
+                let tempCurMonth = currentMonth + 1 //month number (int)
+                let tempCurYear = currentYear //year (int)
 
                 let numRows = 0
                 let currentRow = 0 //always spaning into middle, or end month at first row
@@ -964,11 +967,9 @@ function placeEvents(events) {
                 }
 
                 //find breakpoint days
-                let tempCurMonth = currentMonth + 1
-                let tempCurYear = currentYear
                 let k = parseInt(startDay) + 1
                 for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
-                    let a = getRowOfDate(months[currentMonth + 1], k, currentYear)
+                    let a = getRowOfDate(months[currentMonth], k, currentYear)
                     if (a != currentRow && a != -1) {
                         if (k > daysInCurentMonth) {
                             if (tempCurMonth == 12) {
@@ -1005,11 +1006,11 @@ function placeEvents(events) {
                         currentEventBannerDivs.push(tempDiv)
 
                         //adding to banner dates array (here is just start day)
-                        currentEventBannerDates.push(`${startYear}-${startMonthNum}-${startDay}`)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
 
                         //adding blank dates to blankDates array
-                        let tempCurMonth = startMonthNum
-                        let tempCurYear = startYear
+                        tempCurMonth = currentMonth+1
+                        tempCurYear = currentYear
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
                             if (k > daysInCurentMonth) {
@@ -1035,12 +1036,12 @@ function placeEvents(events) {
                         tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is each brkPt day)
-                        currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
 
                         //adding blank dates to blankDates array
                         if (Math.abs(spanNextRow[i + 1] - breakPTArr[i]) > 0) {
                             for (let j = breakPTArr[i] + 1; j <= spanNextRow[i + 1]; j++) {
-                                currentEventBlankDivsDates.push(`${startYear}-${startMonthNum}-${j}`)
+                                currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${j}`)
                             }
                         }
                     }
@@ -1062,8 +1063,8 @@ function placeEvents(events) {
                         currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
 
                         //pushing blank dates into blankDates array
-                        let tempCurMonth = startMonthNum
-                        let tempCurYear = startYear
+                        tempCurMonth = currentMonth+1
+                        tempCurYear = currentYear
                         let k = breakPTArr[i] + 1
                         if (Math.abs(endDay - breakPTArr[i]) > 0) {
                             for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
