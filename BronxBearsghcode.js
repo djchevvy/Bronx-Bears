@@ -1184,19 +1184,32 @@ function placeEvents(events) {
 
 //function takes in date(all ints, month=int,not 0 indexed), and returns that months total days
 function getTotalDays(year, month) {
-    let totalDays = 0
+    // "2024" "6"
+    let totalDays = -1 //error with total days calc
     let numRows = 0
     if (month == 2) {
         numRows = getRowOfDate(months[month - 1], 28, year)
-        totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        if(numRows != -1){
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
     }
-    else if (month == 1 || 3 || 5 || 6 || 8 || 12) {
+    else if(month == 2 && year % 4 == 0){
+        numRows = getRowOfDate(months[month - 1], 29, year) //leap year
+        if(numRows != -1){
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
+    }
+    else if (month == (1 || 3 || 5 || 7 || 8 || 10 || 12)) {
         numRows = getRowOfDate(months[month - 1], 31, year)
-        totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        if(numRows != -1){
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
     }
     else {
         numRows = getRowOfDate(months[month - 1], 30, year)
-        totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        if(numRows != -1){
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
     }
 
     return totalDays
@@ -1233,7 +1246,7 @@ function getRowOfDate(month, day, year, endYear = year) {
     let daysInLastMonth = new Date(year, monthNum - 1, 0).getDate();
     let totalDays = firstDayIndex + monthDays
     let rowCount = Math.ceil(totalDays / 7)
-    let rowInd = -1 //for return on invalid dates
+    let rowInd = 0 
     const firstDayOfLastMonth = new Date(year, monthNum - 1, 1).getDay()
     const daysFromLastMonth = (firstDayOfLastMonth < 0) ? firstDayOfLastMonth + 7 : firstDayOfLastMonth;
     if (day <= monthDays) {
@@ -1245,6 +1258,8 @@ function getRowOfDate(month, day, year, endYear = year) {
                 rowInd++
             }
         }
+    }else{
+        rowInd = -1 //for return on invalid dates
     }
 
     //returns -1 if calculations are incorrect
