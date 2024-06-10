@@ -1,5 +1,5 @@
 
-<script>
+
 class Task {
     constructor(name, desc, date, endDate, imgSrc, index) {
         this.name = name
@@ -1240,4 +1240,4 @@ function heapSort(eventsArr) {
     }//end while
     return sortedList;
 }//end heapsort function
-</script>
+
