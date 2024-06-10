@@ -1,5 +1,4 @@
 
-<script>
 class Task {
     constructor(name, desc, date, endDate, imgSrc, index) {
         this.name = name
@@ -795,13 +794,18 @@ function placeEvents(events) {
                 totalDays = getTotalDays(startYear, startMonthNum)
                 numRows = totalDays / 7 - 1
                 let daysInCurentMonth = new Date(parseInt(startYear), startMonthNum, 0).getDate() //# of days in specified month/year
-                let firstDayIndEndMonth = new Date(`${endMonth} 1, ${endYear}`).getDay() //0 = sunday 6 = saturday
+                let firstDayIndEndMonth = new Date(`${startMonthNum+1} 1, ${endYear}`).getDay() //0 = sunday 6 = saturday
                 //need to treat this as extension of prev-month days to get correct length
                 let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
                 let endDayNum = parseInt(endDay) + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
                 //we know the end day will always be the last day on the page in CASE 3
                 let savedEndDay = endDay //not sure if needed
-                endDay = endDayNum
+                //calculates last day on page
+                if(document.getElementById(`${startYear}-${startMonthNum+1}-1`) == null){
+                    endDay = daysInCurentMonth
+                }else{
+                    endDay = endDayNum
+                }
 
                 //find breakpoint days
                 let tempCurMonth = startMonthNum
@@ -824,8 +828,8 @@ function placeEvents(events) {
                         spanInd++
                         breakInd++
                         currentRow++
-                        k++
                     }
+                    k++
                 }//end for -breakpoints
                 //assembling banners & blanks & dates array
                 //breakInd and SpanInd should always be equal
@@ -1240,4 +1244,3 @@ function heapSort(eventsArr) {
     }//end while
     return sortedList;
 }//end heapsort function
-</script>
