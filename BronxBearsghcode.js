@@ -812,7 +812,7 @@ function placeEvents(events) {
                 let tempCurYear = startYear
                 let k = parseInt(startDay) + 1
                 for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
-                    if (getRowOfDate(startMonth, i, startYear) != currentRow) {
+                    if (getRowOfDate(startMonth, k, startYear) != currentRow) {
                         if (k > daysInCurentMonth) {
                             if(tempCurMonth == 12){
                                 tempCurMonth = 1
