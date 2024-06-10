@@ -840,7 +840,6 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
-                        if(firstDayInd)
                         var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
