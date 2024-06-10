@@ -461,7 +461,7 @@ function placeEvents(events) {
         //MULTI-MONTH EVENTS
         //CASE 1: span prev month -> current month; startMonth= not important, endMonth=currentMonth 
         //edge case span december <- January;
-        else if (endMonthNum == currentMonth + 1 || endMonthNum == 1 && currentMonth == 0) {
+        else if (endMonthNum == currentMonth + 1 && Math.abs(startMonthNum-endMonthNum) == 1 || endMonthNum == 1 && currentMonth == 0) {
             let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
             let breakInd = 0 //index 0 is the first breakpt to next row
             let spanNextRow = [] //array to hold last day of event spanning banner in 1 row; stores day(s) before row ends
@@ -640,7 +640,7 @@ function placeEvents(events) {
 
 
         //CASE 2: span current month > nxt month; startMonth=currentMonth, endMonth=currentMonth+1
-        else if (startMonthNum + 1 == endMonthNum || endMonthNum == 1 && currentMonth == 11) {
+        else if (startMonthNum + 1 == endMonthNum && Math.abs(startMonthNum-endMonthNum) == 1 || endMonthNum == 1 && currentMonth == 11) {
             let numRows = 0
             let currentRow = getRowOfDate(startMonth, startDay, startYear)
             let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
@@ -1060,7 +1060,7 @@ function placeEvents(events) {
                         tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is last brkPt day)
-                        currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
 
                         //pushing blank dates into blankDates array
                         tempCurMonth = currentMonth+1
