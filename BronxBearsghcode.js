@@ -1011,7 +1011,7 @@ function placeEvents(events) {
 
                 for (let i = 0; i < daysBtw; i++) {
                     let a = getRowOfDate(months[currentMonth], k, currentYear)
-                    if (a != currentRow && a != -1) {
+                    if (a != currentRow && a != -1 && tempCurMonth == endMonthNum) {
                         if (k > daysInCurentMonth) {
                             if (tempCurMonth == 12) {
                                 tempCurMonth = 1
@@ -1200,6 +1200,7 @@ function placeEvents(events) {
 
                 for (let i = 0; i < daysBtw; i++) {
                     let a = getRowOfDate(months[currentMonth], k, currentYear)
+                    daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
                     if (a != currentRow && a != -1) {
                         if (k > daysInCurentMonth) {
                             if (tempCurMonth == 12) {
@@ -1225,7 +1226,29 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
-                        var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        let sDate = 0 //start date OBJ
+                        let eDate = 0 //end date OBJ
+                        //first of month is first day of grid
+                        if(firstDayIndCurMonth == 0){
+                            tempCurMonth = currentMonth + 1
+                            tempCurYear = currentYear
+                        }
+                        else{
+                            //edge case december -> january
+                            if(tempCurMonth == 1 && tempCurYear != startYear){
+                                tempCurMonth = 12
+                                tempCurYear = currentYear - 1
+                            }
+                            //every other month boudary: starting in prev-month on current month page
+                            else{
+                                tempCurMonth = currentMonth-1
+                                tempCurYear = currentYear
+                            }
+                        }
+                        sDate = new Date(`${tempCurMonth}-${startDay}-${tempCurYear}`)
+                        eDate = new Date(`${endMonthNum}-${spanNextRow[i]}-${tempCurYear}`)
+                        let rowZeroDayDiff = Math.abs((sDate.getTime() - eDate.getTime()) / (1000 * 60 * 60 * 24))
+                        var width = rowZeroDayDiff * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
@@ -1236,13 +1259,26 @@ function placeEvents(events) {
                         currentEventBannerDivs.push(tempDiv)
 
                         //adding to banner dates array (here is just start day)
-                        tempCurMonth = currentMonth + 1
-                        tempCurYear = currentYear
-                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-
+                        //if banner starts in current month, first day will be 0 ind
+                        if(firstDayIndCurMonth == 0){
+                            currentEventBannerDates.push(`${tempCurYear}-${endMonthNum}-${startDay}`)
+                        }
+                        //else banner starts in last month
+                        else{
+                            //edge case december -> january
+                            if(tempCurMonth == 1 && tempCurYear != startYear){
+                                currentEventBannerDates.push(`${tempCurYear-1}-${endMonthNum-1}-${startDay}`)
+                            }
+                            //else just starting in last month
+                            else{
+                                currentEventBannerDates.push(`${tempCurYear}-${endMonthNum-1}-${startDay}`)
+                            }
+                        }
+                        
                         //adding blank dates to blankDates array
                         let k = parseInt(startDay) + 1
-                        for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
+                        for (let j = 0; j < rowZeroDayDiff; j++) {
+                            daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
                             if (k > daysInCurentMonth) {
                                 tempCurMonth = endMonthNum
                                 tempCurYear = endYear
