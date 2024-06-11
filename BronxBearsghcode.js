@@ -1028,7 +1028,13 @@ function placeEvents(events) {
                 //january edge case: years will be one apart
                 if (currentMonth == 0) {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
-                    a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
+                    //if january 31 is last day of month, get endDay + month of january
+                    if(firstDayIndEndMonth == 0){
+                        a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
+                    }
+                    else{ //if not january 31 is last day of month, get endDay + month of Feb
+                        a1 = new Date(`${tempCurYear + 1}-2-${endDay}`)
+                    }
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
                 else {
@@ -1099,15 +1105,7 @@ function placeEvents(events) {
                         }
                         //for day width calculation: covers edge case spanning into nxt month
                         let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
-                        let eD = 0//end Date as OBJ
-                        //if we are spanning btw months, index tempCurMonth to curMonth for end date OBJ
-                        
-                        //case start day month != spanNextRow[i] day month && not current month January
-                        if(tempCurMonth != currentMonth+1 && tempCurMonth != 12 && currentMonth != 0){
-                            eD = new Date(`${currentYear}-${tempCurMonth+1}-${spanNextRow[i]}`)
-                        }else{//case start day month = spanNextRow[i] day month
-                            eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
-                        }
+                        let eD = new Date(`${currentYear}-${currentMonth+1}-${spanNextRow[i]}`)//end Date as OBJ
                         daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
                         
                         var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
@@ -1319,7 +1317,11 @@ function placeEvents(events) {
                         let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
                         let eD = 0//end Date as OBJ
                         //if we are spanning btw months, index tempCurMonth to curMonth
-                        if(tempCurMonth != currentMonth+1){
+                        if(tempCurMonth != currentMonth+1 && currentMonth == 0){
+                            //indexing from december to jan, multi-row banner
+                            eD = new Date(`${currentYear}-1-${spanNextRow[i]}`)
+                        }
+                        else if(tempCurMonth != currentMonth+1){//normal case
                             eD = new Date(`${currentYear}-${tempCurMonth+1}-${spanNextRow[i]}`)
                         }else{
                             eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
