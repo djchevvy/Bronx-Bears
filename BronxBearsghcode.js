@@ -840,6 +840,7 @@ function placeEvents(events) {
                 let tempCurYear = startYear
                 let k = parseInt(startDay) + 1
                 for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
+                    daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                     if (k > daysInCurentMonth) {
                         if (tempCurMonth == 12) {
                             tempCurMonth = 1
@@ -848,7 +849,6 @@ function placeEvents(events) {
                             tempCurMonth++
                         }
                         k = 1
-                        daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                     }
                     let a = getRowOfDate(startMonth, k, startYear)
                     if (a != currentRow && a != -1 && tempCurMonth == startMonthNum) {
@@ -1043,8 +1043,9 @@ function placeEvents(events) {
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
 
-
+                //find breakpoint days
                 for (let i = 0; i < daysBtw; i++) {
+                    daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                     if (k > daysInCurentMonth) {
                         if (tempCurMonth == 12) {
                             tempCurMonth = 1
@@ -1053,9 +1054,8 @@ function placeEvents(events) {
                             tempCurMonth++
                         }
                         k = 1
-                        daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                     }
-                    let a = getRowOfDate(months[currentMonth], k, currentYear)
+                    let a = getRowOfDate(months[tempCurMonth-1], k, tempCurYear)
                     if (a != currentRow && a != -1 && tempCurMonth == currentMonth + 1) {
                         breakPTArr[breakInd] = k
                         spanNextRow[spanInd] = k - 1
@@ -1088,7 +1088,18 @@ function placeEvents(events) {
                                 tempCurYear = currentYear
                             }
                         }
-                        var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //for day width calculation: covers edge case spanning into nxt month
+                        let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
+                        let eD = 0//end Date as OBJ
+                        //if we are spanning btw months, index tempCurMonth to curMonth
+                        if(tempCurMonth != currentMonth+1){
+                            eD = new Date(`${currentYear}-${tempCurMonth+1}-${spanNextRow[i]}`)
+                        }else{
+                            eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
+                        }
+                        daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
+                        
+                        var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
@@ -1105,6 +1116,7 @@ function placeEvents(events) {
 
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
+                            daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                             if (k > daysInCurentMonth) {
                                 if (tempCurMonth == 12) {
                                     tempCurMonth = 1
@@ -1270,8 +1282,6 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
-                        let sDate = 0 //start date OBJ
-                        let eDate = 0 //end date OBJ
                         //first of month is first day of grid, start in cur month; else start in prev month
                         if (firstDayIndCurMonth == 0) {
                             tempCurMonth = currentMonth + 1
@@ -1289,10 +1299,17 @@ function placeEvents(events) {
                                 tempCurYear = currentYear
                             }
                         }
-                        sDate = new Date(`${tempCurMonth}-${startDay}-${tempCurYear}`)
-                        eDate = new Date(`${endMonthNum}-${spanNextRow[i]}-${tempCurYear}`)
-                        let rowZeroDayDiff = Math.abs((sDate.getTime() - eDate.getTime()) / (1000 * 60 * 60 * 24))
-                        var width = rowZeroDayDiff * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //for day width calculation: covers edge case spanning into nxt month
+                        let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
+                        let eD = 0//end Date as OBJ
+                        //if we are spanning btw months, index tempCurMonth to curMonth
+                        if(tempCurMonth != currentMonth+1){
+                            eD = new Date(`${currentYear}-${tempCurMonth+1}-${spanNextRow[i]}`)
+                        }else{
+                            eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
+                        }
+                        daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
+                        var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
