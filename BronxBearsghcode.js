@@ -977,21 +977,29 @@ function placeEvents(events) {
                 numRows = totalDays / 7 - 1
                 let daysInCurentMonth = new Date(parseInt(currentYear), currentMonth + 1, 0).getDate() //# of days in specified month/year
                 let daysInLastMonth = new Date(parseInt(currentYear), currentMonth, 0).getDate()
-                let firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
+                let firstDayIndEndMonth = 0 //0 = sunday 6 = saturday
+                //edge case december
+                if(currentMonth == 11){
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear}`).getDay()
+                }else{ //normal calculation
+                    firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay()
+                }
                 let firstDayIndCurMonth = new Date(`${currentMonth + 1} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
-                let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
+                //let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
                 // OLD let endDayNum = 7 - firstDayIndEndMonth + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
                 let endDayNum = daysInCurentMonth + Math.abs(7 - firstDayIndEndMonth)//this is the last day of the event in the last row extended as days of current month (for width calc)
                 let savedEndDay = endDay
                 let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
-                //calculate endDay: if first of nxt month is not on page, end-day = last of cur month
-                if (document.getElementById(`${currentYear}-${currentMonth + 2}-1`) == null) {
+                //calculates last day on page; edge case december
+                if (currentMonth == 11 && document.getElementById(`${currentYear+1}-1-1`) == null) {
                     endDay = daysInCurentMonth
-                }
-                else {
-                    //else last day is last day on page
+                }//normal case; first of nxt month
+                else if (document.getElementById(`${currentYear}-${currentMonth + 2}-1`) == null) {
+                    endDay = daysInCurentMonth
+                } else {//extend current month days
                     endDay = endDayNum
-                }//nxt month days in cur month or not
+                }
+                
 
                 //calculate startday: start is either first of month, or first day from last month
                 if (firstDayIndCurMonth === 0) {
@@ -1071,14 +1079,15 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
-                        //first of month is first day of grid, start in cur month; else start in prev month
+                        tempCurMonth = currentMonth+1 //test fix for edge case december -> january
+                        //first of month is first day of grid, start in cur month and year; else start in prev month
                         if (firstDayIndCurMonth == 0) {
                             tempCurMonth = currentMonth + 1
                             tempCurYear = currentYear
                         }
                         else {
                             //edge case december -> january
-                            if (tempCurMonth == 1 && tempCurYear != startYear) {
+                            if (tempCurMonth == 1 && tempCurYear != parseInt(startYear)) {
                                 tempCurMonth = 12
                                 tempCurYear = currentYear - 1
                             }
@@ -1115,7 +1124,7 @@ function placeEvents(events) {
                         //adding blank dates to blankDates array
 
                         let k = parseInt(startDay) + 1
-                        for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
+                        for (let j = 0; j < daysBtw; j++) {
                             daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                             if (k > daysInCurentMonth) {
                                 if (tempCurMonth == 12) {
@@ -1212,9 +1221,14 @@ function placeEvents(events) {
                 numRows = totalDays / 7 - 1
                 let daysInCurentMonth = new Date(parseInt(currentYear), currentMonth + 1, 0).getDate() //# of days in specified month/year
                 let daysInLastMonth = new Date(parseInt(currentYear), currentMonth, 0).getDate()
-                let firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
+                let firstDayIndEndMonth = 0 //0 = sunday 6 = saturday
+                if(currentMonth == 11){ //edge case decemeber
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear}`).getDay()
+                }else{ //normal calculation
+                    firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay()
+                }
                 let firstDayIndCurMonth = new Date(`${currentMonth + 1} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
-                let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
+                //let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
                 // NOT USEDlet endDayNum = 7 - firstDayIndEndMonth + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
                 let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
                 //endDay will be on page bc we are in the last month
