@@ -798,6 +798,7 @@ function placeEvents(events) {
         else if (monthDiff >= 2) {
             //event is at starting month of multi-month event: edited CASE 2
             if (currentDateMonthOBJ === startDateMonthOBJ) {
+                let singleRowCalc = false
                 let numRows = 0
                 let currentRow = getRowOfDate(startMonth, startDay, startYear)
                 let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
@@ -833,31 +834,56 @@ function placeEvents(events) {
                     endDay = endDayNum
                 }
 
-                //find breakpoint days
-                let tempCurMonth = startMonthNum
-                let tempCurYear = startYear
-                let k = parseInt(startDay) + 1
-                for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
-                    daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
-                    if (k > daysInCurentMonth) {
-                        if (tempCurMonth == 12) {
-                            tempCurMonth = 1
-                            tempCurYear++
-                        } else {
-                            tempCurMonth++
+                
+                let a = new Date(`${startYear}-${startMonthNum}-${startDay}`)//start date OBJ
+                let a1 = 0//end date OBJ
+                //endDate is in same month and year
+                if (firstDayIndEndMonth == 0) {
+                    a1 = new Date(`${startYear}-${startMonthNum}-${endDay}`)
+                }
+                else if(firstDayIndEndMonth != 0 && currentMonth == 11){
+                    a1 = new Date(`${currentYear+1}-1-${endDay-daysInCurentMonth}`)
+                }
+                //non year boudary endDate ends in next month, index startMonthNum forward 1 
+                else{
+                    a1 = new Date(`${startYear}-${startMonthNum+1}-${endDay-daysInCurentMonth}`)
+                }
+
+                let daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                //single row width calculation if event starts in last row of current month
+                if (daysBtw <= 6) {
+                    singleRowCalc = true
+                    breakInd++
+                    spanNextRow[0] == parseInt(endDay)
+                }
+                else {
+                    //find breakpoint days
+                    let tempCurMonth = startMonthNum
+                    let tempCurYear = startYear
+                    let k = parseInt(startDay) + 1
+                    for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
+                        daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
+                        if (k > daysInCurentMonth) {
+                            if (tempCurMonth == 12) {
+                                tempCurMonth = 1
+                                tempCurYear++
+                            } else {
+                                tempCurMonth++
+                            }
+                            k = 1
                         }
-                        k = 1
-                    }
-                    let a = getRowOfDate(startMonth, k, startYear)
-                    if (a != currentRow && a != -1 && tempCurMonth == startMonthNum) {
-                        breakPTArr[breakInd] = k
-                        spanNextRow[spanInd] = k - 1
-                        spanInd++
-                        breakInd++
-                        currentRow++
-                    }
-                    k++
-                }//end for -breakpoints
+                        let a = getRowOfDate(startMonth, k, startYear)
+                        if (a != currentRow && a != -1 && tempCurMonth == startMonthNum) {
+                            breakPTArr[breakInd] = k
+                            spanNextRow[spanInd] = k - 1
+                            spanInd++
+                            breakInd++
+                            currentRow++
+                        }
+                        k++
+                    }//end for -breakpoints
+                }
+
                 //assembling banners & blanks & dates array
                 //breakInd and SpanInd should always be equal
                 for (let i = 0; i < breakInd; i++) {
@@ -892,6 +918,9 @@ function placeEvents(events) {
                             }
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
                             k++
+                        }
+                        if(singleRowCalc){
+                            break
                         }
                     }
                     //ith row
@@ -988,8 +1017,12 @@ function placeEvents(events) {
                 let endDayNum = daysInCurentMonth + Math.abs(7 - firstDayIndEndMonth)//this is the last day of the event in the last row extended as days of current month (for width calc)
                 let savedEndDay = endDay
                 let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
+                //if end date is on page; don't go through other else if's to change end date
+                if(document.getElementById(`${endYear}-${endMonthNum}-${endDay}`) != null){
+                    //keep endDay same by not going to other cases
+                }
                 //calculates last day on page; edge case december
-                if (currentMonth == 11 && document.getElementById(`${currentYear + 1}-1-1`) == null) {
+                else if (currentMonth == 11 && document.getElementById(`${currentYear + 1}-1-1`) == null) {
                     endDay = daysInCurentMonth
                 }//normal case; first of nxt month, and not in decemeber, that's what first case is for
                 else if (document.getElementById(`${currentYear}-${currentMonth + 2}-1`) == null && currentMonth != 11) {
@@ -1031,7 +1064,7 @@ function placeEvents(events) {
                         a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
                     }
                     else { //if not january 31 is last day of month, get endDay + month of Feb
-                        a1 = new Date(`${tempCurYear + 1}-2-${endDay-daysInCurentMonth}`)
+                        a1 = new Date(`${tempCurYear + 1}-2-${endDay - daysInCurentMonth}`)
                     }
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
@@ -1260,12 +1293,12 @@ function placeEvents(events) {
                     a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
                 }
                 //or ending in january as curMonth and spanning dec -> jan
-                else if(currentMonth == 0 && endMonthNum == 1){
+                else if (currentMonth == 0 && endMonthNum == 1) {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
                     a1 = new Date(`${currentYear}-1-${endDay}`)
                 }
                 //or ending in january as curMonth and spanning only into previous month (dec) days
-                else if(currentMonth == 0 && endMonthNum == 12 && document.getElementById(`${currentYear-1}-12-31`) != null){
+                else if (currentMonth == 0 && endMonthNum == 12 && document.getElementById(`${currentYear - 1}-12-31`) != null) {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
                     a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
                 }
@@ -1278,7 +1311,7 @@ function placeEvents(events) {
 
                 //single row width calc; or multi-line
                 let singleRowCalc = false
-                if (daysBtw <=6) {
+                if (daysBtw <= 6) {
                     breakInd++//run banner placement on only first row
                     spanNextRow[spanInd] = parseInt(endDay)
                     singleRowCalc = true
@@ -1373,7 +1406,7 @@ function placeEvents(events) {
                             k++
                         }
                         //single row banner placement
-                        if(singleRowCalc){
+                        if (singleRowCalc) {
                             break
                         }
                     }//end 0th row placment
