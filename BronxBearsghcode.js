@@ -1259,6 +1259,17 @@ function placeEvents(events) {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
                     a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
                 }
+                //or ending in january as curMonth and spanning dec -> jan
+                else if(currentMonth == 0 && endMonthNum == 1){
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear}-1-${endDay}`)
+                }
+                //or ending in january as curMonth and spanning only into previous month (dec) days
+                else if(currentMonth == 0 && endMonthNum == 12 && document.getElementById(`${currentYear-1}-12-31`) != null){
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
+                }
+                //else ending in non year boudary month and can use index of months
                 else {
                     a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
                     a1 = new Date(`${tempCurYear}-${tempCurMonth + 1}-${endDay}`)
