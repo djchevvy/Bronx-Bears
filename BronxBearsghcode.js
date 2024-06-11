@@ -319,6 +319,12 @@ function placeEvents(events) {
         startMonthNum = startMonthNum.getMonth() + 1
         let endMonthNum = new Date(`${endMonth} ${endDay}, ${endYear}`)
         endMonthNum = endMonthNum.getMonth() + 1
+
+        //used for CASE 3 month comparison
+        let startDateMonthOBJ = new Date(`${startYear}-${startMonthNum}-1`).getTime()//event start date as first of month (for CASE 3 events w/ monthDiff > 3)
+        let endDateMonthOBJ = new Date(`${endYear}-${endMonthNum}-1`).getTime()//event end date as first of month (for CASE 3 events w/ monthDiff > 3)
+        let currentDateMonthOBJ = new Date(`${currentYear}-${currentMonth+1}-1`).getTime()//current month and year as a date obj (for CASE 3 event comparison)
+        var monthDiff = Math.abs(Math.round((endDateMonthOBJ - startDateMonthOBJ) / (1000 * 60 * 60 * 24 * 7 * 4)))//difference in #months between event start and end months
         //case 1 span same row in same month/year (multiday and single day)
         //if event exists on same row of month and same month and year || event exists on same month grid, but is exclusively in prev/nxt month (first or last row only) || edge case december to january last row event (exists only in jan)
         if ((getRowOfDate(startMonth, startDay, startYear) == getRowOfDate(endMonth, endDay, endYear) && (startMonth === endMonth) && (startYear === endYear) && currentMonth == startMonthNum - 1)
@@ -791,9 +797,9 @@ function placeEvents(events) {
         //CASE 3: MORE THAN 2 months SPAN
         //Any events that span more than just an adjacent month to the current month should be processed here
         //would like for it to also be able to process multi-month events that span over multiple years
-        else if (startMonthNum + 2 >= endMonthNum) {
+        else if (monthDiff >= 2) {
             //event is at starting month of multi-month event: edited CASE 2
-            if (startMonthNum == currentMonth + 1) {
+            if (currentDateMonthOBJ === startDateMonthOBJ) {
                 let numRows = 0
                 let currentRow = getRowOfDate(startMonth, startDay, startYear)
                 let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
@@ -878,8 +884,12 @@ function placeEvents(events) {
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
                             if (k > daysInCurentMonth) {
-                                tempCurMonth = endMonthNum
-                                tempCurYear = endYear
+                                if (tempCurMonth == 12) {
+                                    tempCurMonth = 1
+                                    tempCurYear++
+                                } else {
+                                    tempCurMonth++
+                                }
                                 k = 1
                             }
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
@@ -931,9 +941,14 @@ function placeEvents(events) {
                         let k = breakPTArr[i] + 1
                         if (Math.abs(endDay - breakPTArr[i]) > 0) {
                             for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
+                                daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                                 if (k > daysInCurentMonth) {
-                                    tempCurMonth = endMonthNum
-                                    tempCurYear = endYear
+                                    if (tempCurMonth == 12) {
+                                        tempCurMonth = 1
+                                        tempCurYear++
+                                    } else {
+                                        tempCurMonth++
+                                    }
                                     k = 1
                                 }
                                 currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
@@ -944,7 +959,7 @@ function placeEvents(events) {
                 }//end assembling banners for
             }//end if: EVENT AT BEGINING MONTH
             //event is in middle month of multi-month event
-            else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum) {
+            else if (currentDateMonthOBJ > startDateMonthOBJ && currentDateMonthOBJ < endDateMonthOBJ) {
                 //Event can either end on this monthView (in nxt month days), or end on next monthView
                 //Event ends on current monthview pg in nxt Month days; edited CASE 2
                 //these vars month and year are used throughout this else if case to keep track of correct month and year
@@ -1091,8 +1106,12 @@ function placeEvents(events) {
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
                             if (k > daysInCurentMonth) {
-                                tempCurMonth = endMonthNum
-                                tempCurYear = endYear
+                                if (tempCurMonth == 12) {
+                                    tempCurMonth = 1
+                                    tempCurYear++
+                                } else {
+                                    tempCurMonth++
+                                }
                                 k = 1
                             }
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
@@ -1147,8 +1166,12 @@ function placeEvents(events) {
                             for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
                                 daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                                 if (k > daysInCurentMonth) {
-                                    tempCurMonth = endMonthNum
-                                    tempCurYear = endYear
+                                    if (tempCurMonth == 12) {
+                                        tempCurMonth = 1
+                                        tempCurYear++
+                                    } else {
+                                        tempCurMonth++
+                                    }
                                     k = 1
                                 }
                                 currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
@@ -1286,8 +1309,12 @@ function placeEvents(events) {
                         for (let j = 0; j < rowZeroDayDiff; j++) {
                             daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
                             if (k > daysInCurentMonth) {
-                                tempCurMonth = endMonthNum
-                                tempCurYear = endYear
+                                if (tempCurMonth == 12) {
+                                    tempCurMonth = 1
+                                    tempCurYear++
+                                } else {
+                                    tempCurMonth++
+                                }
                                 k = 1
                             }
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
@@ -1341,8 +1368,12 @@ function placeEvents(events) {
                         if (Math.abs(endDay - breakPTArr[i]) > 0) {
                             for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
                                 if (k > daysInCurentMonth) {
-                                    tempCurMonth = endMonthNum
-                                    tempCurYear = endYear
+                                    if (tempCurMonth == 12) {
+                                        tempCurMonth = 1
+                                        tempCurYear++
+                                    } else {
+                                        tempCurMonth++
+                                    }
                                     k = 1
                                 }
                                 currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
