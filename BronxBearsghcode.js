@@ -825,11 +825,11 @@ function placeEvents(events) {
                 let endDayNum = daysInCurentMonth + Math.abs(7 - firstDayIndEndMonth)
                 //we know the end day will always be the last day on the page in CASE 3 FIRST MONTH
                 let savedEndDay = endDay //not sure if needed
-                //calculates last day on page; edge case december
+                //calculates last day on page; edge case december with no january days
                 if (currentMonth == 11 && document.getElementById(`${currentYear+1}-1-1`) == null) {
                     endDay = daysInCurentMonth
-                }//normal case
-                else if (document.getElementById(`${startYear}-${startMonthNum + 1}-1`) == null) {
+                }//normal case, and prevented from running in december, that's what first case is for
+                else if (document.getElementById(`${startYear}-${startMonthNum + 1}-1`) == null && currentMonth != 11) {
                     endDay = daysInCurentMonth
                 } else {
                     endDay = endDayNum
@@ -980,7 +980,7 @@ function placeEvents(events) {
                 let firstDayIndEndMonth = 0 //0 = sunday 6 = saturday
                 //edge case december
                 if(currentMonth == 11){
-                    firstDayIndEndMonth = new Date(`January 1, ${currentYear}`).getDay()
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear+1}`).getDay()
                 }else{ //normal calculation
                     firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay()
                 }
@@ -993,8 +993,8 @@ function placeEvents(events) {
                 //calculates last day on page; edge case december
                 if (currentMonth == 11 && document.getElementById(`${currentYear+1}-1-1`) == null) {
                     endDay = daysInCurentMonth
-                }//normal case; first of nxt month
-                else if (document.getElementById(`${currentYear}-${currentMonth + 2}-1`) == null) {
+                }//normal case; first of nxt month, and not in decemeber, that's what first case is for
+                else if (document.getElementById(`${currentYear}-${currentMonth + 2}-1`) == null && currentMonth != 11) {
                     endDay = daysInCurentMonth
                 } else {//extend current month days
                     endDay = endDayNum
@@ -1100,10 +1100,12 @@ function placeEvents(events) {
                         //for day width calculation: covers edge case spanning into nxt month
                         let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
                         let eD = 0//end Date as OBJ
-                        //if we are spanning btw months, index tempCurMonth to curMonth
-                        if(tempCurMonth != currentMonth+1){
+                        //if we are spanning btw months, index tempCurMonth to curMonth for end date OBJ
+                        
+                        //case start day month != spanNextRow[i] day month && not current month January
+                        if(tempCurMonth != currentMonth+1 && tempCurMonth != 12 && currentMonth != 0){
                             eD = new Date(`${currentYear}-${tempCurMonth+1}-${spanNextRow[i]}`)
-                        }else{
+                        }else{//case start day month = spanNextRow[i] day month
                             eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
                         }
                         daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
@@ -1223,7 +1225,7 @@ function placeEvents(events) {
                 let daysInLastMonth = new Date(parseInt(currentYear), currentMonth, 0).getDate()
                 let firstDayIndEndMonth = 0 //0 = sunday 6 = saturday
                 if(currentMonth == 11){ //edge case decemeber
-                    firstDayIndEndMonth = new Date(`January 1, ${currentYear}`).getDay()
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear+1}`).getDay()
                 }else{ //normal calculation
                     firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay()
                 }
