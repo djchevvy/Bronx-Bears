@@ -1031,7 +1031,7 @@ function placeEvents(events) {
                         a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
                     }
                     else { //if not january 31 is last day of month, get endDay + month of Feb
-                        a1 = new Date(`${tempCurYear + 1}-2-${endDay}`)
+                        a1 = new Date(`${tempCurYear + 1}-2-${endDay-daysInCurentMonth}`)
                     }
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
