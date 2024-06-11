@@ -1323,7 +1323,7 @@ function placeEvents(events) {
 
                         //adding blank dates to blankDates array
                         let k = parseInt(startDay) + 1
-                        for (let j = 0; j < rowZeroDayDiff; j++) {
+                        for (let j = 0; j < daysBtw; j++) {
                             daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
                             if (k > daysInCurentMonth) {
                                 if (tempCurMonth == 12) {
