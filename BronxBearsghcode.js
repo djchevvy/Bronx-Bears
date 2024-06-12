@@ -834,19 +834,19 @@ function placeEvents(events) {
                     endDay = endDayNum
                 }
 
-                
-                let a = new Date(`${startYear}-${startMonthNum}-${startDay}`)//start date OBJ
+
+                let a = new Date(`${startMonthNum}-${startDay}-${startYear}`)//start date OBJ
                 let a1 = 0//end date OBJ
                 //endDate is in same month and year
                 if (firstDayIndEndMonth == 0) {
                     a1 = new Date(`${startYear}-${startMonthNum}-${endDay}`)
                 }
-                else if(firstDayIndEndMonth != 0 && currentMonth == 11){
-                    a1 = new Date(`${currentYear+1}-1-${endDay-daysInCurentMonth}`)
+                else if (firstDayIndEndMonth != 0 && currentMonth == 11) {
+                    a1 = new Date(`${currentYear + 1}-1-${endDay - daysInCurentMonth}`)
                 }
                 //non year boudary endDate ends in next month, index startMonthNum forward 1 
-                else{
-                    a1 = new Date(`${startYear}-${startMonthNum+1}-${endDay-daysInCurentMonth}`)
+                else {
+                    a1 = new Date(`${startYear}-${startMonthNum + 1}-${endDay - daysInCurentMonth}`)
                 }
 
                 let daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
@@ -854,7 +854,7 @@ function placeEvents(events) {
                 if (daysBtw <= 6) {
                     singleRowCalc = true
                     breakInd++
-                    spanNextRow[0] == parseInt(endDay)
+                    spanNextRow.push(parseInt(endDay))
                 }
                 else {
                     //find breakpoint days
@@ -919,7 +919,7 @@ function placeEvents(events) {
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
                             k++
                         }
-                        if(singleRowCalc){
+                        if (singleRowCalc) {
                             break
                         }
                     }
@@ -1018,7 +1018,7 @@ function placeEvents(events) {
                 let savedEndDay = endDay
                 let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
                 //if end date is on page; don't go through other else if's to change end date
-                if(document.getElementById(`${endYear}-${endMonthNum}-${endDay}`) != null){
+                if (document.getElementById(`${endYear}-${endMonthNum}-${endDay}`) != null) {
                     //keep endDay same by not going to other cases
                 }
                 //calculates last day on page; edge case december
@@ -1064,7 +1064,14 @@ function placeEvents(events) {
                         a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
                     }
                     else { //if not january 31 is last day of month, get endDay + month of Feb
-                        a1 = new Date(`${tempCurYear + 1}-2-${endDay - daysInCurentMonth}`)
+                        if (endDay > daysInCurentMonth) {
+                            //endDay is extension of current Month
+                            a1 = new Date(`${tempCurYear + 1}-2-${endDay - daysInCurentMonth}`)
+                        } else {
+                            //endDay ends before end of grid nxt month ex. Feb 1st
+                            a1 = new Date(`${tempCurYear + 1}-2-${endDay}`)
+                        }
+
                     }
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
@@ -1313,34 +1320,34 @@ function placeEvents(events) {
                 let singleRowCalc = false
                 if (daysBtw <= 6) {
                     breakInd++//run banner placement on only first row
-                    spanNextRow[spanInd] = parseInt(endDay)
+                    spanNextRow.push(parseInt(endDay))
                     singleRowCalc = true
                 }
-
-                //find breakpoint days for each row
-                for (let i = 0; i < daysBtw; i++) {
-                    daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
-                    if (k > daysInCurentMonth) {
-                        if (tempCurMonth == 12) {
-                            tempCurMonth = 1
-                            tempCurYear++
-                        } else {
-                            tempCurMonth++
+                else {
+                    //find breakpoint days for each row
+                    for (let i = 0; i < daysBtw; i++) {
+                        daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
+                        if (k > daysInCurentMonth) {
+                            if (tempCurMonth == 12) {
+                                tempCurMonth = 1
+                                tempCurYear++
+                            } else {
+                                tempCurMonth++
+                            }
+                            k = 1
                         }
-                        k = 1
-                    }
-                    let a = getRowOfDate(months[tempCurMonth - 1], k, currentYear)
-                    if (a != currentRow && a != -1 && currentMonth + 1 == tempCurMonth) {
+                        let a = getRowOfDate(months[tempCurMonth - 1], k, currentYear)
+                        if (a != currentRow && a != -1 && currentMonth + 1 == tempCurMonth) {
 
-                        breakPTArr[breakInd] = k
-                        spanNextRow[spanInd] = k - 1
-                        spanInd++
-                        breakInd++
-                        currentRow++
-                    }
-                    k++
-                }//end for -breakpoints
-
+                            breakPTArr[breakInd] = k
+                            spanNextRow[spanInd] = k - 1
+                            spanInd++
+                            breakInd++
+                            currentRow++
+                        }
+                        k++
+                    }//end for -breakpoints
+                }
                 //assembling banners, blanks, & dates array
                 //breakInd and SpanInd should always be equal
                 for (let i = 0; i < breakInd; i++) {
