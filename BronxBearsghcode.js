@@ -1498,13 +1498,13 @@ function placeEvents(events) {
             else {
                 taskChildren = parent.querySelectorAll(".task")
                 blankChildren = parent.querySelectorAll(".monthview-blank")
-                extraTask = parent.querySelector("#extra_tasks")
+                extraTask = parent.querySelector("#extra_Tasks")
                 //either current day has nothing, a combination of events and blanks < 2, or is full
-                if (taskChildren.length < 2 && blankChildren.length < 2) {
+                if (taskChildren.length + blankChildren.length  < 2) {
                     parent.appendChild(currentEventBannerDivs[i])
                     currentEventAdded = true //current event was added
                 }
-                else if ((taskChildren.length == 2 || blankChildren.length == 2) && extraTask == null) {
+                else if (taskChildren.length + blankChildren.length  == 2 && extraTask == null) {
                     let threeDots = document.createElement('div')
                     threeDots.id = "extra_Tasks"
                     threeDots.innerHTML = "..."
