@@ -171,7 +171,7 @@ function generateCalendar(month, year) {
 }//end function generate calendar
 
 function generateDetailedView(eventTask) {
-    if (eventTask.getName() === "There are currenly no Events to display") {
+    if (eventTask.getName() === "There are currently no Events to display") {
         var parentDiv = document.getElementById('detailedview-event-details')
         parentDiv.innerHTML = ""
         var titleDiv = document.createElement("div")
@@ -195,25 +195,29 @@ function generateDetailedView(eventTask) {
     descDiv.id = "detailedview-desc"
     descDiv.innerHTML = eventTask.getDesc()
 
-    var imgDiv = document.createElement("img")
-    imgDiv.classList.add("detailedview-img")
-    imgDiv.id = "detailedview-img"
-    imgDiv.src = eventTask.getImgSrc()
-
     var dateDiv = document.createElement("div")
     dateDiv.classList.add("detailedview-date")
     dateDiv.id = "detailedview-date"
     dateDiv.innerHTML = mergedDateStr
     parentDiv.appendChild(dateDiv)
     parentDiv.appendChild(titleDiv)
-    parentDiv.appendChild(imgDiv)
+    //if the event has no image, the Task object will hold "none" under image source. 
+    //If this is the case, the event view will not append an image div 
+    if (eventTask.getImgSrc() != "none") {
+        var imgDiv = document.createElement("img")
+        imgDiv.classList.add("detailedview-img")
+        imgDiv.id = "detailedview-img"
+        imgDiv.src = eventTask.getImgSrc()
+        parentDiv.appendChild(imgDiv)
+    }
     parentDiv.appendChild(descDiv)
 }
-
+//function returns Event with closest start date to passed matchDate
+//also updates current EventIndex
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
-        var emptyTSK = new Task("There are currenly no Events to display", "none", "none", "none", "none", "none")
+        var emptyTSK = new Task("There are currently no Events to display", "none", "none", "none", "none", "none")
         return emptyTSK
     }
     for (let i = 0; i < list.length; i++) {
@@ -222,6 +226,7 @@ function getClosestEvent(matchDate, list) {
         }
         else if (Math.abs(Date.parse(matchDate) - Date.parse(closestTSK.getDate())) > Math.abs(Date.parse(matchDate) - Date.parse(list[i].getDate()))) {
             closestTSK = list[i]
+            currentEventIndex = i
         }
     }
     return closestTSK
@@ -253,6 +258,12 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
         let daysInLastMonth = new Date(year, month, 0).getDate()
         let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
         let startDayNum = parseInt(startDay) + daysInCurentMonth + daysFromLastMonth
+
+        let startDate = new Date(`${startYear}-${startMonthNum}-1`).getTime()//event start date as first of month (for CASE 3 events w/ monthDiff > 3)
+        let endDate = new Date(`${endYear}-${endMonthNum}-1`).getTime()//event end date as first of month (for CASE 3 events w/ monthDiff > 3)
+        let compareDate = new Date(`${year}-${month + 1}-1`).getTime()//current month and year as a date obj (for CASE 3 event comparison)
+        var monthDiff = Math.abs(Math.round((endDate - startDate) / (1000 * 60 * 60 * 24 * 7 * 4)))//difference in #months between event start and end months
+
         //if event is on page && from next month exclusively && same year || month+1 == 12 && startMonth == 1 && year+1 == startYear && next Month exclusively -> then eventOnPage=true
         if (startDayNum <= totalDays && (startMonthNum == month + 2 && parseInt(startYear) == year && startMonth == endMonth || month + 1 == 12 && startMonthNum == 1 && year + 1 == parseInt(startYear) && startMonth == endMonth)) {
             eventOnPage = true
@@ -261,21 +272,27 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             let firstDayLastMonth = daysInLastMonth - firstOfCurMonthInd + 1
             if (parseInt(startDay) >= firstDayLastMonth || parseInt(endDay) >= firstDayLastMonth) { eventOnPage = true }
         }
+        //this if places correct events in the current month
         if (startMonth === months[month] && parseInt(startYear) === year || endMonth === months[month] && parseInt(endYear) === year
             || startMonthNum == month && endMonthNum == startMonthNum && parseInt(startYear) === year && eventOnPage
             || startMonthNum == month + 2 && startMonthNum == endMonthNum && parseInt(endYear) == year && eventOnPage
             || month == 11 && eventOnPage && startMonthNum == 1 && year + 1 == startYear
-            || Math.abs(startMonthNum - endMonthNum) >= 2 && month + 1 >= startMonthNum && month + 1 <= endMonthNum && parseInt(startYear) >= year && parseInt(endYear) <= year) {
+            || monthDiff >= 2 && compareDate >= startDate && compareDate <= endDate) {
             currentMonthEvents.push(allEventsArr[i])
             let title = allEventsArr[i].querySelector(".event-name").textContent
             let desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
             let startDate = allEventsArr[i].querySelector(".date").textContent
             let endDate = allEventsArr[i].querySelector(".end-date").textContent
             let imgSrc = allEventsArr[i].querySelector(".event-image").src
+            //making image element optional
+            //query selector should return null when no div is found
+            if (imgSrc == null) {
+                imgSrc = "none"
+            }
             let tmpTask = new Task(title, desc, startDate, endDate, imgSrc, -1)
             currentMonthTasks.push(tmpTask)
         }
-    }//end fpr
+    }//end for
 }//end generateCurrentMonthEvents
 
 //function is passed monthEventsTasks; uses data within task objects to populate monthview Tasks
@@ -294,7 +311,6 @@ function placeEvents(events) {
         let name = tmpTask.getName()
         //if id date matches a calendar grid element && the task does not exist on the page, 
         let parent = document.getElementById(date)
-        let children = null
         let extraTaskElem = null
 
         let currentEventBannerDivs = []   //holds each banner div (formatted with specific length)
@@ -312,6 +328,12 @@ function placeEvents(events) {
         startMonthNum = startMonthNum.getMonth() + 1
         let endMonthNum = new Date(`${endMonth} ${endDay}, ${endYear}`)
         endMonthNum = endMonthNum.getMonth() + 1
+
+        //used for CASE 3 month comparison
+        let startDateMonthOBJ = new Date(`${startYear}-${startMonthNum}-1`).getTime()//event start date as first of month (for CASE 3 events w/ monthDiff > 3)
+        let endDateMonthOBJ = new Date(`${endYear}-${endMonthNum}-1`).getTime()//event end date as first of month (for CASE 3 events w/ monthDiff > 3)
+        let currentDateMonthOBJ = new Date(`${currentYear}-${currentMonth + 1}-1`).getTime()//current month and year as a date obj (for CASE 3 event comparison)
+        var monthDiff = Math.abs(Math.round((endDateMonthOBJ - startDateMonthOBJ) / (1000 * 60 * 60 * 24 * 7 * 4)))//difference in #months between event start and end months
         //case 1 span same row in same month/year (multiday and single day)
         //if event exists on same row of month and same month and year || event exists on same month grid, but is exclusively in prev/nxt month (first or last row only) || edge case december to january last row event (exists only in jan)
         if ((getRowOfDate(startMonth, startDay, startYear) == getRowOfDate(endMonth, endDay, endYear) && (startMonth === endMonth) && (startYear === endYear) && currentMonth == startMonthNum - 1)
@@ -372,7 +394,8 @@ function placeEvents(events) {
             let spanInd = 0
             //find breakpoint day
             for (let i = parseInt(startDay) + 1; i <= parseInt(endDay); i++) {
-                if (getRowOfDate(startMonth, i, startYear) != currentRow) {
+                let a = getRowOfDate(startMonth, i, startYear)
+                if (a != currentRow && a != -1) {
                     breakPTArr[breakInd] = i
                     spanNextRow[spanInd] = i - 1
                     spanInd++
@@ -460,7 +483,7 @@ function placeEvents(events) {
         //MULTI-MONTH EVENTS
         //CASE 1: span prev month -> current month; startMonth= not important, endMonth=currentMonth 
         //edge case span december <- January;
-        else if (endMonthNum == currentMonth + 1 || endMonthNum == 1 && currentMonth == 0) {
+        else if (endMonthNum == currentMonth + 1 && Math.abs(startMonthNum - endMonthNum) == 1 && monthDiff < 2 || endMonthNum == 1 && currentMonth == 0 && monthDiff < 2) {
             let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
             let breakInd = 0 //index 0 is the first breakpt to next row
             let spanNextRow = [] //array to hold last day of event spanning banner in 1 row; stores day(s) before row ends
@@ -537,7 +560,8 @@ function placeEvents(events) {
                         tempCurYear = endYear
                         tempCurMonthNum = endMonthNum
                     }
-                    if (getRowOfDate(months[tempCurMonthNum - 1], j, tempCurYear, endYear) != currentRow && tempCurMonthNum == endMonthNum) {
+                    let a = getRowOfDate(months[tempCurMonthNum - 1], j, tempCurYear, endYear)
+                    if (a != currentRow && a != -1 && tempCurMonthNum == endMonthNum) {
                         breakPTArr[breakInd] = j
                         spanNextRow[spanInd] = j - 1
                         spanInd++
@@ -635,10 +659,8 @@ function placeEvents(events) {
             }
         }//end MULTI-MONTH EVENTS (same year) case 1
 
-
-
         //CASE 2: span current month > nxt month; startMonth=currentMonth, endMonth=currentMonth+1
-        else if (startMonthNum + 1 == endMonthNum || endMonthNum == 1 && currentMonth == 11) {
+        else if (startMonthNum + 1 == endMonthNum && Math.abs(startMonthNum - endMonthNum) == 1 && monthDiff < 2 || endMonthNum == 1 && currentMonth == 11 && monthDiff < 2) {
             let numRows = 0
             let currentRow = getRowOfDate(startMonth, startDay, startYear)
             let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
@@ -675,7 +697,8 @@ function placeEvents(events) {
             } else {
                 //find breakpoint day
                 for (let i = parseInt(startDay) + 1; i <= parseInt(endDay); i++) {
-                    if (getRowOfDate(startMonth, i, startYear) != currentRow) {
+                    let a = getRowOfDate(startMonth, i, startYear)
+                    if (a != currentRow && a != -1) {
                         breakPTArr[breakInd] = i
                         spanNextRow[spanInd] = i - 1
                         spanInd++
@@ -781,9 +804,10 @@ function placeEvents(events) {
         //CASE 3: MORE THAN 2 months SPAN
         //Any events that span more than just an adjacent month to the current month should be processed here
         //would like for it to also be able to process multi-month events that span over multiple years
-        else if (startMonthNum + 2 >= endMonthNum) {
+        else if (monthDiff >= 2) {
             //event is at starting month of multi-month event: edited CASE 2
-            if (startMonthNum == currentMonth + 1) {
+            if (currentDateMonthOBJ === startDateMonthOBJ) {
+                let singleRowCalc = false
                 let numRows = 0
                 let currentRow = getRowOfDate(startMonth, startDay, startYear)
                 let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
@@ -794,43 +818,81 @@ function placeEvents(events) {
                 totalDays = getTotalDays(startYear, startMonthNum)
                 numRows = totalDays / 7 - 1
                 let daysInCurentMonth = new Date(parseInt(startYear), startMonthNum, 0).getDate() //# of days in specified month/year
-                let firstDayIndEndMonth = new Date(`${startMonthNum+1} 1, ${endYear}`).getDay() //0 = sunday 6 = saturday
+                let firstDayIndEndMonth = 0//first day index of nxt month on current month pg
+                //edge case december
+                if (currentMonth == 11) {
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear + 1}`).getDay() //0 = sunday 6 = saturday
+                }
+                else { //normal case
+                    firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
+                }
+
                 //need to treat this as extension of prev-month days to get correct length
                 let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
-                let endDayNum = parseInt(endDay) + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
-                //we know the end day will always be the last day on the page in CASE 3
+                // OLD let endDayNum = parseInt(endDay) + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
+                let endDayNum = daysInCurentMonth + Math.abs(7 - firstDayIndEndMonth)
+                //we know the end day will always be the last day on the page in CASE 3 FIRST MONTH
                 let savedEndDay = endDay //not sure if needed
-                //calculates last day on page
-                if(document.getElementById(`${startYear}-${startMonthNum+1}-1`) == null){
+                //calculates last day on page; edge case december with no january days
+                if (currentMonth == 11 && document.getElementById(`${currentYear + 1}-1-1`) == null) {
                     endDay = daysInCurentMonth
-                }else{
+                }//normal case, and prevented from running in december, that's what first case is for
+                else if (document.getElementById(`${startYear}-${startMonthNum + 1}-1`) == null && currentMonth != 11) {
+                    endDay = daysInCurentMonth
+                } else {
                     endDay = endDayNum
                 }
 
-                //find breakpoint days
-                let tempCurMonth = startMonthNum
-                let tempCurYear = startYear
-                let k = parseInt(startDay) + 1
-                for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
-                    if (getRowOfDate(startMonth, i, startYear) != currentRow) {
+
+                let a = new Date(`${startMonthNum}-${startDay}-${startYear}`)//start date OBJ
+                let a1 = 0//end date OBJ
+                //endDate is in same month and year
+                if (firstDayIndEndMonth == 0) {
+                    a1 = new Date(`${startYear}-${startMonthNum}-${endDay}`)
+                }
+                else if (firstDayIndEndMonth != 0 && currentMonth == 11) {
+                    a1 = new Date(`${currentYear + 1}-1-${endDay - daysInCurentMonth}`)
+                }
+                //non year boudary endDate ends in next month, index startMonthNum forward 1 
+                else {
+                    a1 = new Date(`${startYear}-${startMonthNum + 1}-${endDay - daysInCurentMonth}`)
+                }
+
+                let daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                //single row width calculation if event starts in last row of current month
+                if (daysBtw <= 6) {
+                    singleRowCalc = true
+                    breakInd++
+                    spanNextRow.push(parseInt(endDay))
+                }
+                else {
+                    //find breakpoint days
+                    let tempCurMonth = startMonthNum
+                    let tempCurYear = startYear
+                    let k = parseInt(startDay) + 1
+                    for (let i = 0; i < Math.abs(parseInt(startDay) - parseInt(endDay)); i++) {
+                        daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                         if (k > daysInCurentMonth) {
-                            if(tempCurMonth == 12){
+                            if (tempCurMonth == 12) {
                                 tempCurMonth = 1
                                 tempCurYear++
-                            }else{
+                            } else {
                                 tempCurMonth++
                             }
                             k = 1
-                            daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                         }
-                        breakPTArr[breakInd] = k
-                        spanNextRow[spanInd] = k - 1
-                        spanInd++
-                        breakInd++
-                        currentRow++
-                    }
-                    k++
-                }//end for -breakpoints
+                        let a = getRowOfDate(startMonth, k, startYear)
+                        if (a != currentRow && a != -1 && tempCurMonth == startMonthNum) {
+                            breakPTArr[breakInd] = k
+                            spanNextRow[spanInd] = k - 1
+                            spanInd++
+                            breakInd++
+                            currentRow++
+                        }
+                        k++
+                    }//end for -breakpoints
+                }
+
                 //assembling banners & blanks & dates array
                 //breakInd and SpanInd should always be equal
                 for (let i = 0; i < breakInd; i++) {
@@ -855,12 +917,19 @@ function placeEvents(events) {
                         let k = parseInt(startDay) + 1
                         for (let j = 0; j < Math.abs(startDay - spanNextRow[i]); j++) {
                             if (k > daysInCurentMonth) {
-                                tempCurMonth = endMonthNum
-                                tempCurYear = endYear
+                                if (tempCurMonth == 12) {
+                                    tempCurMonth = 1
+                                    tempCurYear++
+                                } else {
+                                    tempCurMonth++
+                                }
                                 k = 1
                             }
                             currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
                             k++
+                        }
+                        if (singleRowCalc) {
+                            break
                         }
                     }
                     //ith row
@@ -908,9 +977,14 @@ function placeEvents(events) {
                         let k = breakPTArr[i] + 1
                         if (Math.abs(endDay - breakPTArr[i]) > 0) {
                             for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
+                                daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
                                 if (k > daysInCurentMonth) {
-                                    tempCurMonth = endMonthNum
-                                    tempCurYear = endYear
+                                    if (tempCurMonth == 12) {
+                                        tempCurMonth = 1
+                                        tempCurYear++
+                                    } else {
+                                        tempCurMonth++
+                                    }
                                     k = 1
                                 }
                                 currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
@@ -921,12 +995,493 @@ function placeEvents(events) {
                 }//end assembling banners for
             }//end if: EVENT AT BEGINING MONTH
             //event is in middle month of multi-month event
-            else if (currentMonth + 1 > startMonthNum && currentMonth + 1 < endMonthNum) {
+            else if (currentDateMonthOBJ > startDateMonthOBJ && currentDateMonthOBJ < endDateMonthOBJ) {
+                //Event can either end on this monthView (in nxt month days), or end on next monthView
+                //Event ends on current monthview pg in nxt Month days; edited CASE 2
+                //these vars month and year are used throughout this else if case to keep track of correct month and year
+                let tempCurMonth = currentMonth + 1 //month number (int)
+                let tempCurYear = currentYear //year (int)
 
+                let numRows = 0
+                let currentRow = 0 //always spaning into middle, or end month at first row
+                let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
+                let breakInd = 0 //index 0 is the first breakpt to next row
+                let spanNextRow = [] //array to hold last day of event spanning banner in 1 row; stores day(s) before row ends
+                let spanInd = 0
+                let totalDays = 0
+                totalDays = getTotalDays(currentYear, currentMonth + 1)
+                numRows = totalDays / 7 - 1
+                let daysInCurentMonth = new Date(parseInt(currentYear), currentMonth + 1, 0).getDate() //# of days in specified month/year
+                let daysInLastMonth = new Date(parseInt(currentYear), currentMonth, 0).getDate()
+                let firstDayIndEndMonth = 0 //0 = sunday 6 = saturday
+                //edge case december
+                if (currentMonth == 11) {
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear + 1}`).getDay()
+                } else { //normal calculation
+                    firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay()
+                }
+                let firstDayIndCurMonth = new Date(`${currentMonth + 1} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
+                //let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
+                // OLD let endDayNum = 7 - firstDayIndEndMonth + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
+                let endDayNum = daysInCurentMonth + Math.abs(7 - firstDayIndEndMonth)//this is the last day of the event in the last row extended as days of current month (for width calc)
+                let savedEndDay = endDay
+                let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
+                //if end date is on page; don't go through other else if's to change end date
+                if (document.getElementById(`${endYear}-${endMonthNum}-${endDay}`) != null) {
+                    //extend endDay as days of currentMonth same by not going to other cases
+                    endDay = parseInt(endDay) + daysInCurentMonth
+                }
+                //calculates last day on page; edge case december
+                else if (currentMonth == 11 && document.getElementById(`${currentYear + 1}-1-1`) == null) {
+                    endDay = daysInCurentMonth
+                }//normal case; first of nxt month, and not in decemeber, that's what first case is for
+                else if (document.getElementById(`${currentYear}-${currentMonth + 2}-1`) == null && currentMonth != 11) {
+                    endDay = daysInCurentMonth
+                } else {//extend current month days
+                    endDay = endDayNum
+                }
+
+
+                //calculate startday: start is either first of month, or first day from last month
+                if (firstDayIndCurMonth === 0) {
+                    startDay = 1
+                }
+                //starting in previous month on currentMonth page
+                else {
+                    startDay = firstDayLastMonth
+                    //edge case multi-month event spanning into next year
+                    if (currentMonth == 0) {
+                        tempCurYear = currentYear - 1
+                        tempCurMonth = 12
+                    }
+                    else {
+                        tempCurMonth = currentMonth
+                    }
+                }
+
+                //find breakpoint days
+                let k = parseInt(startDay) + 1
+                //have to use Date obj here to account for many scenarios
+                let daysBtw = 0  //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                let a = 0
+                let a1 = 0
+
+                //january edge case: years will be one apart
+                if (currentMonth == 0) {
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    //if january 31 is last day of month, get endDay + month of january
+                    if (firstDayIndEndMonth == 0) {
+                        a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
+                    }
+                    else { //if not january 31 is last day of month, get endDay + month of Feb
+                        a1 = new Date(`${tempCurYear + 1}-2-${endDay - daysInCurentMonth}`)
+                    }
+                    daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                }
+                else {
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    //we have extended endDay in current month, but it really belongs to nxt month
+                    if (endDay > daysInCurentMonth) {
+                        //december edge case
+                        if (currentMonth == 11) {
+                            a1 = new Date(`${tempCurYear}-1-${endDay - daysInCurentMonth}`)
+                        }
+                        else {
+                            a1 = new Date(`${tempCurYear}-${currentMonth + 2}-${endDay - daysInCurentMonth}`)
+                        }
+                    }
+                    //event ends in current month
+                    else {
+                        a1 = new Date(`${tempCurYear}-${currentMonth + 1}-${endDay}`)
+                    }
+
+                    daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                }
+
+                //find breakpoint days
+                for (let i = 0; i < daysBtw; i++) {
+                    daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
+                    if (k > daysInCurentMonth) {
+                        if (tempCurMonth == 12) {
+                            tempCurMonth = 1
+                            tempCurYear++
+                        } else {
+                            tempCurMonth++
+                        }
+                        k = 1
+                    }
+                    let a = getRowOfDate(months[tempCurMonth - 1], k, tempCurYear)
+                    if (a != currentRow && a != -1 && tempCurMonth == currentMonth + 1) {
+                        breakPTArr[breakInd] = k
+                        spanNextRow[spanInd] = k - 1
+                        spanInd++
+                        breakInd++
+                        currentRow++
+                    }
+                    k++
+                }//end for -breakpoints
+
+                //assembling banners, blanks, & dates array
+                //breakInd and SpanInd should always be equal
+                for (let i = 0; i < breakInd; i++) {
+                    //0th row
+                    if (i == 0) {
+                        tempCurMonth = currentMonth + 1 //test fix for edge case december -> january
+                        //first of month is first day of grid, start in cur month and year; else start in prev month
+                        if (firstDayIndCurMonth == 0) {
+                            tempCurMonth = currentMonth + 1
+                            tempCurYear = currentYear
+                        }
+                        else {
+                            //edge case december -> january
+                            if (tempCurMonth == 1) {
+                                tempCurMonth = 12
+                                tempCurYear = currentYear - 1
+                            }
+                            //every other month boudary: starting in prev-month on current month page
+                            else {
+                                tempCurMonth = currentMonth //0 indexed, so technically last month
+                                tempCurYear = currentYear
+                            }
+                        }
+                        //for day width calculation: covers edge case spanning into nxt month
+                        let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
+                        let eD = new Date(`${currentYear}-${currentMonth + 1}-${spanNextRow[i]}`)//end Date as OBJ
+                        daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
+
+                        var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //creating title div for monthview task
+                        var tempDiv = document.createElement('div')
+                        tempDiv.classList.add("task")
+                        tempDiv.id = name
+                        tempDiv.innerHTML = name
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.style.cssText = `width: ${width}vw;`
+                        currentEventBannerDivs.push(tempDiv)
+
+                        //adding to banner dates array (here is just start day)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+
+                        //adding blank dates to blankDates array
+
+                        let k = parseInt(startDay) + 1
+                        for (let j = 0; j < daysBtw; j++) {
+                            daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
+                            if (k > daysInCurentMonth) {
+                                if (tempCurMonth == 12) {
+                                    tempCurMonth = 1
+                                    tempCurYear++
+                                } else {
+                                    tempCurMonth++
+                                }
+                                k = 1
+                            }
+                            currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
+                            k++
+                        }
+                    }
+                    //ith row
+                    if (i + 1 < breakPTArr.length) {
+                        var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //creating title div for monthview task
+                        var tempDiv = document.createElement('div')
+                        tempDiv.classList.add("task")
+                        tempDiv.id = name
+                        tempDiv.innerHTML = name
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.style.cssText = `width: ${width}vw;`
+                        currentEventBannerDivs.push(tempDiv)
+                        tempDiv.style.cssText = `width: ${width}vw;`
+
+                        //adding to banner dates array (here is each brkPt day)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
+
+                        //adding blank dates to blankDates array
+                        if (Math.abs(spanNextRow[i + 1] - breakPTArr[i]) > 0) {
+                            for (let j = breakPTArr[i] + 1; j <= spanNextRow[i + 1]; j++) {
+                                currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${j}`)
+                            }
+                        }
+                    }
+
+                    //last row
+                    else {
+                        var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //creating title div for monthview task
+                        var tempDiv = document.createElement('div')
+                        tempDiv.classList.add("task")
+                        tempDiv.id = name
+                        tempDiv.innerHTML = name
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.style.cssText = `width: ${width}vw;`
+                        currentEventBannerDivs.push(tempDiv)
+                        tempDiv.style.cssText = `width: ${width}vw;`
+
+                        //adding to banner dates array (here is last brkPt day)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
+
+                        //pushing blank dates into blankDates array
+                        tempCurMonth = currentMonth + 1
+                        tempCurYear = currentYear
+                        let k = breakPTArr[i] + 1
+                        if (Math.abs(endDay - breakPTArr[i]) > 0) {
+                            for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
+                                daysInCurentMonth = new Date(parseInt(tempCurYear), tempCurMonth, 0).getDate()
+                                if (k > daysInCurentMonth) {
+                                    if (tempCurMonth == 12) {
+                                        tempCurMonth = 1
+                                        tempCurYear++
+                                    } else {
+                                        tempCurMonth++
+                                    }
+                                    k = 1
+                                }
+                                currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
+                                k++
+                            }
+                        }
+                    }
+                }//end assembling banners for
             }//end else if inside CASE 3 MIDDLE MONTH
             //event is in endMonth of multi-month event
+            //CONDITION: currentMonth + 1 === endMonthNum && currentYear === parseInt(endYear)
             else {
+                //Event must end on this page
+                //these vars month and year are used throughout this else if case to keep track of correct month and year
+                let tempCurMonth = currentMonth + 1 //month number (int)
+                let tempCurYear = currentYear //year (int)
 
+                let numRows = 0
+                let currentRow = 0 //always spaning into middle, or end month at first row
+                let breakPTArr = [] //array of break point days; stores day(s) of month where next row starts
+                let breakInd = 0 //index 0 is the first breakpt to next row
+                let spanNextRow = [] //array to hold last day of event spanning banner in 1 row; stores day(s) before row ends
+                let spanInd = 0
+                let totalDays = 0
+                totalDays = getTotalDays(currentYear, currentMonth + 1)
+                numRows = totalDays / 7 - 1
+                let daysInCurentMonth = new Date(parseInt(currentYear), currentMonth + 1, 0).getDate() //# of days in specified month/year
+                let daysInLastMonth = new Date(parseInt(currentYear), currentMonth, 0).getDate()
+                let firstDayIndEndMonth = 0 //0 = sunday 6 = saturday
+                if (currentMonth == 11) { //edge case decemeber
+                    firstDayIndEndMonth = new Date(`January 1, ${currentYear + 1}`).getDay()
+                } else { //normal calculation
+                    firstDayIndEndMonth = new Date(`${currentMonth + 2} 1, ${currentYear}`).getDay()
+                }
+                let firstDayIndCurMonth = new Date(`${currentMonth + 1} 1, ${currentYear}`).getDay() //0 = sunday 6 = saturday
+                //let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
+                // NOT USEDlet endDayNum = 7 - firstDayIndEndMonth + daysInCurentMonth + daysFromLastMonth//this is the last day of the event in the last row extended as days of current month (for width calc)
+                let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
+                //endDay will be on page bc we are in the last month
+
+                //calculate startday: start is either first of month, or first day from last month
+                if (firstDayIndCurMonth === 0) {
+                    startDay = 1
+                }
+                //starting in previous month on currentMonth page
+                else {
+                    startDay = firstDayLastMonth
+                    //edge case multi-month event spanning into next year
+                    if (currentMonth == 0) {
+                        tempCurYear = currentYear - 1
+                        tempCurMonth = 12
+                    }
+                    else {
+                        tempCurMonth = currentMonth
+                    }
+                }
+
+
+                let k = parseInt(startDay) + 1
+                //have to use Date obj here to account for many scenarios
+                let daysBtw = 0   //Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+                let a = 0 //start date
+                let a1 = 0  //end date
+                //start and end date are in same month
+                if (firstDayIndCurMonth === 0) {
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
+                }
+                //or ending in january as curMonth and spanning dec -> jan
+                else if (currentMonth == 0 && endMonthNum == 1) {
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${currentYear}-1-${endDay}`)
+                }
+                //or ending in january as curMonth and spanning only into previous month (dec) days
+                else if (currentMonth == 0 && endMonthNum == 12 && document.getElementById(`${currentYear - 1}-12-31`) != null) {
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth}-${endDay}`)
+                }
+                //else ending in non year boudary month and can use index of months
+                else {
+                    a = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+                    a1 = new Date(`${tempCurYear}-${tempCurMonth + 1}-${endDay}`)
+                }
+                daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
+
+                //single row width calc; or multi-line
+                let singleRowCalc = false
+                if (daysBtw <= 6) {
+                    breakInd++//run banner placement on only first row
+                    spanNextRow.push(parseInt(endDay))
+                    singleRowCalc = true
+                }
+                else {
+                    //find breakpoint days for each row
+                    for (let i = 0; i < daysBtw; i++) {
+                        daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
+                        if (k > daysInCurentMonth) {
+                            if (tempCurMonth == 12) {
+                                tempCurMonth = 1
+                                tempCurYear++
+                            } else {
+                                tempCurMonth++
+                            }
+                            k = 1
+                        }
+                        let a = getRowOfDate(months[tempCurMonth - 1], k, currentYear)
+                        if (a != currentRow && a != -1 && currentMonth + 1 == tempCurMonth) {
+
+                            breakPTArr[breakInd] = k
+                            spanNextRow[spanInd] = k - 1
+                            spanInd++
+                            breakInd++
+                            currentRow++
+                        }
+                        k++
+                    }//end for -breakpoints
+                }
+                //assembling banners, blanks, & dates array
+                //breakInd and SpanInd should always be equal
+                for (let i = 0; i < breakInd; i++) {
+                    //0th row
+                    if (i == 0) {
+                        tempCurMonth = currentMonth + 1 //test fix for edge case december -> january
+                        //first of month is first day of grid, start in cur month; else start in prev month
+                        if (firstDayIndCurMonth == 0) {
+                            tempCurMonth = currentMonth + 1
+                            tempCurYear = currentYear
+                        }
+                        else {
+                            //edge case december -> january
+                            if (tempCurMonth == 1) {
+                                tempCurMonth = 12
+                                tempCurYear = currentYear - 1
+                            }
+                            //every other month boudary: starting in prev-month on current month page
+                            else {
+                                tempCurMonth = currentMonth //0 indexed, so technically last month
+                                tempCurYear = currentYear
+                            }
+                        }
+                        //for day width calculation: covers edge case spanning into nxt month
+                        let sD = new Date(`${tempCurYear}-${tempCurMonth}-${startDay}`)//start Date as OBJ
+                        let eD = 0//end Date as OBJ
+                        //if we are spanning btw months, index tempCurMonth to curMonth
+                        if (tempCurMonth != currentMonth + 1 && currentMonth == 0) {
+                            //indexing from december to jan, multi-row banner
+                            eD = new Date(`${currentYear}-1-${spanNextRow[i]}`)
+                        }
+                        else if (tempCurMonth != currentMonth + 1) {//normal case
+                            eD = new Date(`${currentYear}-${tempCurMonth + 1}-${spanNextRow[i]}`)
+                        } else {
+                            eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
+                        }
+                        daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
+                        var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //creating title div for monthview task
+                        var tempDiv = document.createElement('div')
+                        tempDiv.classList.add("task")
+                        tempDiv.id = name
+                        tempDiv.innerHTML = name
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.style.cssText = `width: ${width}vw;`
+                        currentEventBannerDivs.push(tempDiv)
+                        //push 0th row event banner
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
+
+                        //adding blank dates to blankDates array
+                        let k = parseInt(startDay) + 1
+                        for (let j = 0; j < daysBtw; j++) {
+                            daysInCurentMonth = new Date(parseInt(currentYear), tempCurMonth, 0).getDate()
+                            if (k > daysInCurentMonth) {
+                                if (tempCurMonth == 12) {
+                                    tempCurMonth = 1
+                                    tempCurYear++
+                                } else {
+                                    tempCurMonth++
+                                }
+                                k = 1
+                            }
+                            currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
+                            k++
+                        }
+                        //single row banner placement
+                        if (singleRowCalc) {
+                            break
+                        }
+                    }//end 0th row placment
+                    //ith row
+                    if (i + 1 < breakPTArr.length) {
+                        var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //creating title div for monthview task
+                        var tempDiv = document.createElement('div')
+                        tempDiv.classList.add("task")
+                        tempDiv.id = name
+                        tempDiv.innerHTML = name
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.style.cssText = `width: ${width}vw;`
+                        currentEventBannerDivs.push(tempDiv)
+                        tempDiv.style.cssText = `width: ${width}vw;`
+
+                        //adding to banner dates array (here is each brkPt day)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
+
+                        //adding blank dates to blankDates array
+                        if (Math.abs(spanNextRow[i + 1] - breakPTArr[i]) > 0) {
+                            for (let j = breakPTArr[i] + 1; j <= spanNextRow[i + 1]; j++) {
+                                currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${j}`)
+                            }
+                        }
+                    }
+
+                    //last row
+                    else {
+                        var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
+                        //creating title div for monthview task
+                        var tempDiv = document.createElement('div')
+                        tempDiv.classList.add("task")
+                        tempDiv.id = name
+                        tempDiv.innerHTML = name
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.style.cssText = `width: ${width}vw;`
+                        currentEventBannerDivs.push(tempDiv)
+                        tempDiv.style.cssText = `width: ${width}vw;`
+
+                        //adding to banner dates array (here is last brkPt day)
+                        currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
+
+                        //pushing blank dates into blankDates array
+                        tempCurMonth = currentMonth + 1
+                        tempCurYear = currentYear
+                        let k = breakPTArr[i] + 1
+                        if (Math.abs(endDay - breakPTArr[i]) > 0) {
+                            for (let j = 0; j < Math.abs(endDay - breakPTArr[i]); j++) {
+                                if (k > daysInCurentMonth) {
+                                    if (tempCurMonth == 12) {
+                                        tempCurMonth = 1
+                                        tempCurYear++
+                                    } else {
+                                        tempCurMonth++
+                                    }
+                                    k = 1
+                                }
+                                currentEventBlankDivsDates.push(`${tempCurYear}-${tempCurMonth}-${k}`)
+                                k++
+                            }
+                        }
+                    }
+                }//end assembling banners for
             }
         }//end CASE 3 multi-month >= 2
 
@@ -934,7 +1489,12 @@ function placeEvents(events) {
 
         //NEW BANNER PLACEMENT CODE
         //place banners
+        let currentEventAdded = false //bool that indicates if the current event banner was added, if so we will add it's corresponding blanks
         for (let i = 0; i < currentEventBannerDivs.length; i++) {
+            currentEventAdded = false
+            let taskChildren = null //All Events under current date
+            let blankChildren = null //All blanks under current event date\
+            let extraTask = null
             let parent = document.getElementById(currentEventBannerDates[i])//ARR NEEDED should hold the date in format mm-dd-yyyy, to refrence where the event banner should be placed for each line
 
             //preventing null refrence errors when looking at children of parent
@@ -944,16 +1504,27 @@ function placeEvents(events) {
             }
             //grabs all children under current day grid so we can look at what tasks are under it
             else {
-                children = parent.getElementsByTagName('div')
-
-                for (let i = 0; i < children.length; i++) {
-                    if (children[i].id == "extra_tasks") {
-                        extraTaskBool = true
-                        break
-                    }
+                taskChildren = parent.querySelectorAll(".task")
+                blankChildren = parent.querySelectorAll(".monthview-blank")
+                extraTask = parent.querySelector("#extra_Tasks")
+                //either current day has nothing, a combination of events and blanks < 2, or is full
+                if (taskChildren.length + blankChildren.length < 2) {
+                    parent.appendChild(currentEventBannerDivs[i])
+                    currentEventAdded = true //current event was added
+                }
+                else if (taskChildren.length + blankChildren.length == 2 && extraTask == null) {
+                    let threeDots = document.createElement('div')
+                    threeDots.id = "extra_Tasks"
+                    threeDots.innerHTML = "..."
+                    parent.appendChild(threeDots)//shows that a task was attempted to be added here, but was not for space preservation
+                    break //if first event banner of current event is not placed, break from current event
+                }
+                else {
+                    break //if first event banner of current event is not placed, break from current event
                 }
             }//end else
 
+            /*
             //add task to corresponding date grid when no tasks are present at that location; children length 1 accounts for day# as a child of grid box
             if (children.length == 1) {
                 parent.appendChild(currentEventBannerDivs[i])
@@ -1010,43 +1581,59 @@ function placeEvents(events) {
                     }
                 }
             }
+            */
         }//end banner for
+        if (currentEventAdded) {
+            //blank placement
+            for (let i = 0; i < currentEventBlankDivsDates.length; i++) {
+                let blankParent = document.getElementById(currentEventBlankDivsDates[i])
+                if (blankParent == null) {
+                    console.log("error finding blank parent: func PLACE EVENTS")
+                    break
+                }
+                let tempChildren = blankParent.getElementsByTagName("div")
+                //prevents overpopulation of grid box
+                if (tempChildren.length >= 4) {
+                    break
+                }
+                //places blank
+                let blank = document.createElement('div')
+                blank.classList.add("monthview-blank")
+                blankParent.appendChild(blank) //create styling in style sheet
+            }//end for
+        }//end if currentEventAdded
 
-        //blank placement
-        for (let i = 0; i < currentEventBlankDivsDates.length; i++) {
-            let blankParent = document.getElementById(currentEventBlankDivsDates[i])
-            if (blankParent == null) {
-                console.log("error finding blank parent: func PLACE EVENTS")
-                break
-            }
-            let tempChildren = blankParent.getElementsByTagName('div')
-            //prevents overpopulation of grid box
-            if (tempChildren.length >= 4) {
-                break
-            }
-            //places blank
-            let blank = document.createElement('div')
-            blank.classList.add("monthview-blank")
-            blankParent.appendChild(blank) //create styling in style sheet
-        }
     }//end for events.length
 }//end func placeEvents
 
 //function takes in date(all ints, month=int,not 0 indexed), and returns that months total days
 function getTotalDays(year, month) {
-    let totalDays = 0
+    // "2024" "6"
+    let totalDays = -1 //error with total days calc
     let numRows = 0
     if (month == 2) {
         numRows = getRowOfDate(months[month - 1], 28, year)
-        totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
     }
-    else if (month == 1 || 3 || 5 || 6 || 8 || 12) {
+    else if (month == 2 && year % 4 == 0) {
+        numRows = getRowOfDate(months[month - 1], 29, year) //leap year
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
+    }
+    else if (month == (1 || 3 || 5 || 7 || 8 || 10 || 12)) {
         numRows = getRowOfDate(months[month - 1], 31, year)
-        totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
     }
     else {
         numRows = getRowOfDate(months[month - 1], 30, year)
-        totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
     }
 
     return totalDays
@@ -1086,14 +1673,20 @@ function getRowOfDate(month, day, year, endYear = year) {
     let rowInd = 0
     const firstDayOfLastMonth = new Date(year, monthNum - 1, 1).getDay()
     const daysFromLastMonth = (firstDayOfLastMonth < 0) ? firstDayOfLastMonth + 7 : firstDayOfLastMonth;
-    for (let i = 0; i < rowCount * 7; i++) {
-        if (i == parseInt(day) + daysFromLastMonth) {
-            break;
+    if (day <= monthDays) {
+        for (let i = 0; i < rowCount * 7; i++) {
+            if (i == parseInt(day) + daysFromLastMonth) {
+                break;
+            }
+            if (i % 7 == 0 && i != 0) {
+                rowInd++
+            }
         }
-        if (i % 7 == 0 && i != 0) {
-            rowInd++
-        }
+    } else {
+        rowInd = -1 //for return on invalid dates
     }
+
+    //returns -1 if calculations are incorrect
     return rowInd
 }
 //dynamically generates detailedView date banner; takes paramters start and end date in format "May 9, 2024"
