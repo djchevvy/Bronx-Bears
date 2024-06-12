@@ -1020,7 +1020,7 @@ function placeEvents(events) {
                 //if end date is on page; don't go through other else if's to change end date
                 if (document.getElementById(`${endYear}-${endMonthNum}-${endDay}`) != null) {
                     //extend endDay as days of currentMonth same by not going to other cases
-                    endDay = endDay + daysInCurentMonth
+                    endDay = parseInt(endDay) + daysInCurentMonth
                 }
                 //calculates last day on page; edge case december
                 else if (currentMonth == 11 && document.getElementById(`${currentYear + 1}-1-1`) == null) {
