@@ -1,6 +1,16 @@
-
+/*
+    NOTES:
+    Event Data is passed in webflow on "Calendar/Events CMS" page via collection list item 
+    Collection List 25. Here all event data fields are linked and exported to the page and listed in the oreder they apear in webflow under <div class="collection-list-wrapper-25 w-dyn-list">.....
+  */
+/*Task Class
+   This is the class object created to store the data of our Events in an object.
+   It contains start date, name, description, end date, and optionally image src. The class has a simple constructor, and getters 
+   for all variables. And a setter for an index.
+   */
 class Task {
     constructor(name, desc, date, endDate, imgSrc, index) {
+        //all vars are strings
         this.name = name
         this.date = date
         this.endDate = endDate
@@ -29,7 +39,8 @@ class Task {
     setIndex(index) {
         this.index = index
     }
-}
+}//end task class
+//global variables
 const calendarDays = document.querySelector('.calendar-days');
 const monthPicker = document.getElementById('month-picker');
 const yearSpan = document.getElementById('year');
@@ -44,13 +55,17 @@ var currentMonthEvents = [];
 var currentMonthTasks = [];
 const allEvents = document.querySelectorAll('.events .event');
 
+//page load functions
+//Loads current month grid, closet event to current date into Event view, and determines all tasks that should exist on the current month
 document.addEventListener('DOMContentLoaded', function () {
-    generateCurrentMonthEvents(allEvents, currentMonth, currentYear);
+    //function calls to initialize calendar
+    generateCurrentMonthEvents(allEvents, currentMonth, currentYear) //populates currentMonthEvents, and currentMonthTasks arrays
     currentMonthTasks = heapSort(currentMonthTasks)
     let temp = months[currentMonth] + " " + today + ", " + currentYear
     generateCalendar(currentMonth, currentYear);
-    generateDetailedView(getClosestEvent(temp, currentMonthTasks))
+    generateDetailedView(getClosestEvent(temp, currentMonthTasks)) //get closest task to current date as of calendar loading and place in detailed view
 });
+//indexes month backward and recalls associated functions to setup calendar
 document.getElementById('prev-year').addEventListener('click', () => {
     currentMonth--;
     if (currentMonth < 0) {
@@ -63,6 +78,7 @@ document.getElementById('prev-year').addEventListener('click', () => {
     let temp = months[currentMonth] + " 1, " + currentYear
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
 });
+//indexes month foward and recalls associated functions to setup calendar
 document.getElementById('next-year').addEventListener('click', () => {
     currentMonth++;
     if (currentMonth > 11) {
@@ -75,6 +91,7 @@ document.getElementById('next-year').addEventListener('click', () => {
     let temp = months[currentMonth] + " 1, " + currentYear
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
 });
+//loads previous event chronologically into detailed view (if more than one exists). This function can also loop on this array
 document.getElementById('prev-event').addEventListener('click', () => {
     if (currentMonthTasks.length == 0) { return }
     if (currentEventIndex == 0) {
@@ -87,6 +104,7 @@ document.getElementById('prev-event').addEventListener('click', () => {
         generateDetailedView(currentMonthTasks[currentEventIndex])
     }
 });
+//loads next event chronologically into detailed view (if more than one exists). This function can also loop on this array
 document.getElementById('next-event').addEventListener('click', () => {
     if (currentMonthTasks.length == 0) { return }
     currentEventIndex++;
@@ -98,6 +116,10 @@ document.getElementById('next-event').addEventListener('click', () => {
         generateDetailedView(currentMonthTasks[currentEventIndex])
     }
 });
+//------------------------------------------------------------------------------------------------------------------------FUNCTIONS--------------------------------------------------------------------------------------------------------
+//generates current month and year monthview calendar grid. Correctly places nxt and prev month days when applicable
+//PARAMETERS: month: current month index (zero indexed int) year: full year# (int) ex. 2024
+//RETURN: NONE
 function generateCalendar(month, year) {
     const monthNames = [
         "January",
@@ -118,30 +140,37 @@ function generateCalendar(month, year) {
     const daysInLastMonth = new Date(year, month, 0).getDate();
     monthPicker.innerText = months[month];
     yearSpan.innerText = year.toString();
-    currentMonthEvents = [];
+    currentMonthEvents = [];// Reset event references on each calendar generation
     let totalDays = firstDayIndex + monthDays
     let rowCount = Math.ceil(totalDays / 7)
     const monthGrid = document.getElementById("calendar-days");
     monthGrid.innerHTML = "";
     let idMonth = 0
     let idYear = year
+
     for (let i = 0; i < rowCount * 7; i++) {
         const dayOfMonth = i - firstDayIndex + 1;
         const dayElement = document.createElement("div")
         dayElement.classList.add("calendar-day")
+        //if statment checks if the day shold be part of the next month or previous month
+      //create previous and next month days
         if (i < firstDayIndex || dayOfMonth > monthDays) {
+            //edge case in january to prevent last month decemeber days having a month of zero and current year
             if (month == 0 && dayOfMonth < monthDays) {
                 idMonth = 12;
                 idYear = year - 1
             }
+            //edge case in decemeber that indexes january days as month 1 and a year ahead
             else if (month == 11 && dayOfMonth > monthDays) {
                 idMonth = 1
                 idYear = year + 1
             }
+            //we want all days after prev + current month to be indexed forward one month as they're in nxt month
             else if (i == totalDays) {
                 idMonth = month + 2
                 idYear = year
             }
+            //prev month day: normal month number; which is already correct # bc of zero index
             else if (i < totalDays) {
                 idMonth = month
                 idYear = year
@@ -153,6 +182,7 @@ function generateCalendar(month, year) {
             dayNum.innerText = dayOfMonth <= 0 ? daysInLastMonth + dayOfMonth : dayOfMonth - monthDays
             dayElement.appendChild(dayNum)
         } else { //day grid box is part of current month
+            //set id month foward one accounting for zero index of month variable
             idMonth = month + 1
             idYear = year
             dayElement.id = `${idYear}-${idMonth}-${dayOfMonth}`
@@ -170,10 +200,14 @@ function generateCalendar(month, year) {
     placeEvents(currentMonthTasks)
 }//end function generate calendar
 
+//PARAMETERS: eventTask: Task class object
+//RETURN:NONE
+//function generates divs for current event's data in the detailedview; function is passed current event to display as Task class object; function has no return
 function generateDetailedView(eventTask) {
+    //places text in detailed view if no tasks exist in current month
     if (eventTask.getName() === "There are currently no Events to display") {
-        var parentDiv = document.getElementById('detailedview-event-details')
-        parentDiv.innerHTML = ""
+        var parentDiv = document.getElementById('detailedview-event-details')//the parent div where all info will be appended
+        parentDiv.innerHTML = "" //clear previous content
         var titleDiv = document.createElement("div")
         titleDiv.classList.add("detailedview-title-noEvents")
         titleDiv.id = "detailedview-title-noEvents"
@@ -182,7 +216,10 @@ function generateDetailedView(eventTask) {
         parentDiv.appendChild(titleDiv)
         return
     }
+    //normal event placing operation
     var mergedDateStr = mergeStart_EndDates(eventTask.getDate(), eventTask.getEndDate())
+    //creating divs for each element of the Current Event (img optional currently 6/12/24)
+
     var parentDiv = document.getElementById('detailedview-event-details')
     parentDiv.innerHTML = ""
     var titleDiv = document.createElement("div")
@@ -199,6 +236,8 @@ function generateDetailedView(eventTask) {
     dateDiv.classList.add("detailedview-date")
     dateDiv.id = "detailedview-date"
     dateDiv.innerHTML = mergedDateStr
+
+    //appending children in order we want them to appear
     parentDiv.appendChild(dateDiv)
     parentDiv.appendChild(titleDiv)
     //if the event has no image, the Task object will hold "none" under image source. 
@@ -212,8 +251,10 @@ function generateDetailedView(eventTask) {
     }
     parentDiv.appendChild(descDiv)
 }
-//function returns Event with closest start date to passed matchDate
-//also updates current EventIndex
+
+//This function also updates current EventIndex to be the index of returned TASK
+//PARAMETERS: matchDate is a str of format "May 1, 2024"; list is the collection of current month events as Task objects
+//RETURN: function returns Event with closest start date to passed matchDate
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
@@ -230,7 +271,10 @@ function getClosestEvent(matchDate, list) {
         }
     }
     return closestTSK
-}
+}//end func getClosestEvent
+
+//PARAMETERS: allEventsArr: collection list of all divs containing event data; month: current Month Index (zero indexed) (int); year: year# (int)
+//RETURN: NONE
 //function decides which months should be added to array currentMonthTasks, and pushes them to the array for the passed current date (currentMonth, currentYear)
 function generateCurrentMonthEvents(allEventsArr, month, year) {
     if (allEventsArr.length === 0) {
@@ -295,7 +339,61 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
     }//end for
 }//end generateCurrentMonthEvents
 
+//PARAMETERS: events: array of current month events as Task class objects (currentMonthTasks) 
+//RETURN: NONE
 //function is passed monthEventsTasks; uses data within task objects to populate monthview Tasks
+/*
+General EXPLANATION:
+    This is a rather complex function that should arguably be split into many sub functions, but it was built the way it is for 
+    a quick development time, and because this was a very complex task and this was my approach to solve it.
+
+    Each task in month view is represented with a banner that has a "on click" link to that event to be viewed in detailed view
+
+    The function has 5 cases that determine which path an event takes for placement on the monthview grid. Once the program decides
+    which case the current event falls into, it creates event banner dates, divs to actually display said divs, and monthview blanks. These components
+    are then placed at the end of the function by the for loop with "//place banners" above it. In that for loop is also the logic that decides how many Events can be
+    placed on any given day(currently set at 2).
+
+    EVENT CASES
+
+    case 1: 
+    Event is a single day event or spans at most a single row in the month. 
+    -must starts and end in same month
+
+    case 2: 
+    Event is a multi-row event that spans only within the same month
+    -must start and end in same month
+
+    CASE 1:
+    Event is single or multi row event that spans from the previous month into the current month
+    -must start in previous month and end in current month
+    -accounts for year boundaries 
+
+    CASE 2:
+    Event is single or multi row event that spans from the current month into the next month
+    -must start in current month and end in next month
+    -accounts for year boundaries
+
+    CASE 3:
+    Event spans 3 or more months including the start month ex. june-august, december-march
+    This case is broken down into 3 sub cases for the starting, middle, and end months of the respective event
+    
+    BEGIN MONTH
+    -event is CASE 3 and we are in this events starting month
+    -accounts for year boundaries
+
+    MIDDLE MONTH
+    -event is CASE 3 and we are inbetween this events starting month and end month exclusively
+    -accounts for year boundaries
+    -accounts for edge case of event ending on middle month page. ex. 12/31/2026 - 02/01/2027 (when viewed in a standard U.S. Monthview calendar)
+
+    END MONTH
+    -event is CASE 3 and we are in this events end month
+    -accounts for year boundaries
+
+    Theoretically The CASE 3 can support multi-year events, but this has not been tested as of 06/12/2024
+
+*/
 function placeEvents(events) {
     //there are no events to place on calendar
     if (events.length === 0) {
@@ -1524,7 +1622,7 @@ function placeEvents(events) {
                 }
             }//end else
 
-            /*
+            /* OLD extra TASKS "..." placement
             //add task to corresponding date grid when no tasks are present at that location; children length 1 accounts for day# as a child of grid box
             if (children.length == 1) {
                 parent.appendChild(currentEventBannerDivs[i])
@@ -1606,6 +1704,8 @@ function placeEvents(events) {
     }//end for events.length
 }//end func placeEvents
 
+//PARAMETERS: year: full year# (str); month: current month # (int 1 indexed)
+//RETURN: total days of current month in current year
 //function takes in date(all ints, month=int,not 0 indexed), and returns that months total days
 function getTotalDays(year, month) {
     // "2024" "6"
@@ -1637,9 +1737,11 @@ function getTotalDays(year, month) {
     }
 
     return totalDays
-}
+}//end func getTotalDays
 
-//given ae event name, the function will search for it and return the index of that task. returns -1 if not found
+//PARAMETERS: events: currentMonthTasks Task class OBJ arr; name: name of current task (str)
+//RETURN:
+//given an event name, the function will search for it in currentMonthTasks and return the index of that task. returns -1 if not found
 function searchEventTasks(events, name) {
     for (let i = 0; i < events.length; i++) {
         var tempName = events[i].getName()
@@ -1649,9 +1751,12 @@ function searchEventTasks(events, name) {
     }
 
     return -1
-}
+}//end func
 
+//PARAMETERS: month: month in words eg. "May"; day: day# year: full year # endYear: default year, else full year # (str or int)
+//RETURN: returns row index of curent date in it's respective month. (zero indexed)
 //function takes in date in form month=strOfMonth, day=#, year=# 
+//Does not work on nxt/prev month days that appear in current month 
 function getRowOfDate(month, day, year, endYear = year) {
     //edge case for january year change
     if (year != endYear) {
@@ -1688,7 +1793,9 @@ function getRowOfDate(month, day, year, endYear = year) {
 
     //returns -1 if calculations are incorrect
     return rowInd
-}
+}//end func
+//PARAMETERS: dateStr: start date; endDateStr: end date; format "May 9, 2024"
+//RETURN: returns a merged string in format "STARTMONTH STARTDAY- ENDMONTH ENDDAY"
 //dynamically generates detailedView date banner; takes paramters start and end date in format "May 9, 2024"
 //returns a merged date string that show the span between months excluding the year
 function mergeStart_EndDates(dateStr, endDateStr) {
@@ -1717,8 +1824,10 @@ function mergeStart_EndDates(dateStr, endDateStr) {
     //(do we realistically need this?)
 
     return spanDateStr
-}
+}//end func
 
+//PARAMETERS: str: parses day # out of formatted str ex. "May 9, 2024"
+//RETURN: returns day # as str
 //function to parse day from date string in format "May 9, 2024"
 function parseDay(str) {
     const regex = /\b\d{1,2}\b/; //searches for one or two numbers surrounded by word boundaries ie " " and "," for our use case
@@ -1735,6 +1844,8 @@ function parseDay(str) {
     }
 
 }
+//PARAMETERS: str: parses month word out of formatted str ex. "May 9, 2024"
+//RETURN: returns month str as str ex. "May"
 //function to parse month from date string in format "May 9, 2024"
 function parseMonth(str) {
     // Define the regex pattern to match the month part of the date string
@@ -1750,6 +1861,8 @@ function parseMonth(str) {
         return -1
     }
 }
+//PARAMETERS: str: parses year # out of formatted str ex. "May 9, 2024"
+//RETURN: returns year # as str ex. "2024"
 //function to parse year from date string in format "May 9, 2024"
 function parseYear(str) {
     const yearPattern = /\b\d{4}\b/;
@@ -1765,7 +1878,9 @@ function parseYear(str) {
         return -1
     }
 }
+
 //takes cms string format "May, 9 2024" and reformats to "2024-5-9"
+//This format is used as ID for each grid box of the month view so we can id each day
 function assembleMonthViewDateStr(str) {
     let day = parseDay(str)
     let month = parseMonth(str)
@@ -1774,8 +1889,10 @@ function assembleMonthViewDateStr(str) {
     let finalStr = year + "-" + month + "-" + day
     return finalStr
 }
+
 //Heap sort takes in an array and sorts the array by starting date
 //passed array of task class objects, and returns a sorted array of those objects
+//Upper Bounded Runtime: O(nlogn)
 function heapSort(eventsArr) {
     /** Create a heap from an array of objects */
     var list = [];
