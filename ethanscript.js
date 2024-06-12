@@ -286,7 +286,7 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             let imgSrc = allEventsArr[i].querySelector(".event-image").src
             //making image element optional
             //query selector should return null when no div is found
-            if (imgSrc == null) {
+            if (imgSrc === "https://cdn.prod.website-files.com/plugins/Basic/assets/placeholder.60f9b1840c.svg" || imgSrc == null) {
                 imgSrc = "none"
             }
             let tmpTask = new Task(title, desc, startDate, endDate, imgSrc, -1)
