@@ -209,7 +209,8 @@ function generateDetailedView(eventTask) {
     parentDiv.appendChild(imgDiv)
     parentDiv.appendChild(descDiv)
 }
-
+//function returns Event with closest start date to passed matchDate
+//also updates current EventIndex
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
@@ -222,6 +223,7 @@ function getClosestEvent(matchDate, list) {
         }
         else if (Math.abs(Date.parse(matchDate) - Date.parse(closestTSK.getDate())) > Math.abs(Date.parse(matchDate) - Date.parse(list[i].getDate()))) {
             closestTSK = list[i]
+            currentEventIndex = i
         }
     }
     return closestTSK
