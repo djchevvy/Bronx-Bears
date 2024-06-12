@@ -1493,10 +1493,11 @@ function placeEvents(events) {
             }
             //grabs all children under current day grid so we can look at what tasks are under it
             else {
-                taskChildren = parent.getElementsByClassName("task")
-                blankChildren = parent.getElementsByClassName("monthview-blank")
-                extraTask = parent.getElementById("extra_tasks")
-                if (taskChildren.length < 2 && blankChildren.length < 2) {
+                taskChildren = parent.querySelectorAll(".task")
+                blankChildren = parent.querySelectorAll(".monthview-blank")
+                extraTask = parent.querySelector("#extra_tasks")
+                //either current day has nothing, a combination of events and blanks < 2, or is full
+                if ((taskChildren.length < 2 && blankChildren.length < 2) || taskChildren == null && blankChildren == null || taskChildren != null && blankChildren == null || taskChildren == null && blankChildren != null) {
                     parent.appendChild(currentEventBannerDivs[i])
                     currentEventAdded = true //current event was added
                 }
