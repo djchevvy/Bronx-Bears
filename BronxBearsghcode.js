@@ -1019,7 +1019,8 @@ function placeEvents(events) {
                 let firstDayLastMonth = daysInLastMonth - firstDayIndCurMonth + 1 //calculates first day from last month in month view
                 //if end date is on page; don't go through other else if's to change end date
                 if (document.getElementById(`${endYear}-${endMonthNum}-${endDay}`) != null) {
-                    //keep endDay same by not going to other cases
+                    //extend endDay as days of currentMonth same by not going to other cases
+                    endDay = endDay + daysInCurentMonth
                 }
                 //calculates last day on page; edge case december
                 else if (currentMonth == 11 && document.getElementById(`${currentYear + 1}-1-1`) == null) {
@@ -1064,14 +1065,7 @@ function placeEvents(events) {
                         a1 = new Date(`${tempCurYear + 1}-1-${endDay}`)
                     }
                     else { //if not january 31 is last day of month, get endDay + month of Feb
-                        if (endDay > daysInCurentMonth) {
-                            //endDay is extension of current Month
-                            a1 = new Date(`${tempCurYear + 1}-2-${endDay - daysInCurentMonth}`)
-                        } else {
-                            //endDay ends before end of grid nxt month ex. Feb 1st
-                            a1 = new Date(`${tempCurYear + 1}-2-${endDay}`)
-                        }
-
+                        a1 = new Date(`${tempCurYear + 1}-2-${endDay - daysInCurentMonth}`)
                     }
                     daysBtw = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
                 }
@@ -1353,6 +1347,7 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
+                        tempCurMonth = currentMonth + 1 //test fix for edge case december -> january
                         //first of month is first day of grid, start in cur month; else start in prev month
                         if (firstDayIndCurMonth == 0) {
                             tempCurMonth = currentMonth + 1
