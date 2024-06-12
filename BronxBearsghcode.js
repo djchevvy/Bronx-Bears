@@ -1479,11 +1479,12 @@ function placeEvents(events) {
 
         //NEW BANNER PLACEMENT CODE
         //place banners
+        let currentEventAdded = false //bool that indicates if the current event banner was added, if so we will add it's corresponding blanks
         for (let i = 0; i < currentEventBannerDivs.length; i++) {
+            currentEventAdded = false
             let taskChildren = null //All Events under current date
             let blankChildren = null //All blanks under current event date\
             let extraTask = null
-            let currentEventAdded = false //bool that indicates if the current event banner was added, if so we will add it's corresponding blanks
             let parent = document.getElementById(currentEventBannerDates[i])//ARR NEEDED should hold the date in format mm-dd-yyyy, to refrence where the event banner should be placed for each line
 
             //preventing null refrence errors when looking at children of parent
@@ -1497,7 +1498,7 @@ function placeEvents(events) {
                 blankChildren = parent.querySelectorAll(".monthview-blank")
                 extraTask = parent.querySelector("#extra_tasks")
                 //either current day has nothing, a combination of events and blanks < 2, or is full
-                if ((taskChildren.length < 2 && blankChildren.length < 2) || taskChildren == null && blankChildren == null || taskChildren != null && blankChildren == null || taskChildren == null && blankChildren != null) {
+                if (taskChildren.length < 2 && blankChildren.length < 2) {
                     parent.appendChild(currentEventBannerDivs[i])
                     currentEventAdded = true //current event was added
                 }
@@ -1506,28 +1507,13 @@ function placeEvents(events) {
                     threeDots.id = "extra_Tasks"
                     threeDots.innerHTML = "..."
                     parent.appendChild(threeDots)//shows that a task was attempted to be added here, but was not for space preservation
+                    break //if first event banner of current event is not placed, break from current event
+                }
+                else{
+                    break //if first event banner of current event is not placed, break from current event
                 }
             }//end else
 
-            if (currentEventAdded) {
-                //blank placement
-                for (let i = 0; i < currentEventBlankDivsDates.length; i++) {
-                    let blankParent = document.getElementById(currentEventBlankDivsDates[i])
-                    if (blankParent == null) {
-                        console.log("error finding blank parent: func PLACE EVENTS")
-                        break
-                    }
-                    let tempChildren = blankParent.getElementsByTagName("div")
-                    //prevents overpopulation of grid box
-                    if (tempChildren.length >= 4) {
-                        break
-                    }
-                    //places blank
-                    let blank = document.createElement('div')
-                    blank.classList.add("monthview-blank")
-                    blankParent.appendChild(blank) //create styling in style sheet
-                }//end for
-            }//end if currentEventAdded
             /*
             //add task to corresponding date grid when no tasks are present at that location; children length 1 accounts for day# as a child of grid box
             if (children.length == 1) {
@@ -1587,6 +1573,25 @@ function placeEvents(events) {
             }
             */
         }//end banner for
+        if (currentEventAdded) {
+            //blank placement
+            for (let i = 0; i < currentEventBlankDivsDates.length; i++) {
+                let blankParent = document.getElementById(currentEventBlankDivsDates[i])
+                if (blankParent == null) {
+                    console.log("error finding blank parent: func PLACE EVENTS")
+                    break
+                }
+                let tempChildren = blankParent.getElementsByTagName("div")
+                //prevents overpopulation of grid box
+                if (tempChildren.length >= 4) {
+                    break
+                }
+                //places blank
+                let blank = document.createElement('div')
+                blank.classList.add("monthview-blank")
+                blankParent.appendChild(blank) //create styling in style sheet
+            }//end for
+        }//end if currentEventAdded
 
     }//end for events.length
 }//end func placeEvents
