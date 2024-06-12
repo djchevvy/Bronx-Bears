@@ -1125,7 +1125,7 @@ function placeEvents(events) {
                         }
                         else {
                             //edge case december -> january
-                            if (tempCurMonth == 1 && tempCurYear != parseInt(startYear)) {
+                            if (tempCurMonth == 1) {
                                 tempCurMonth = 12
                                 tempCurYear = currentYear - 1
                             }
@@ -1355,7 +1355,7 @@ function placeEvents(events) {
                         }
                         else {
                             //edge case december -> january
-                            if (tempCurMonth == 1 && tempCurYear != startYear) {
+                            if (tempCurMonth == 1) {
                                 tempCurMonth = 12
                                 tempCurYear = currentYear - 1
                             }
