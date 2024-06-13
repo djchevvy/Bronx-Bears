@@ -240,6 +240,8 @@ function generateDetailedView(eventTask) {
     //line section break for above and below Description
     var lineBreak = document.createElement("div")
     lineBreak.classList.add("section-break")
+    var lineBreak2 = document.createElement("div")
+    lineBreak2.classList.add("section-break")
 
     var descTitle = document.createElement("div")
     descTitle.id = "detailedview-desc-title"
@@ -260,7 +262,7 @@ function generateDetailedView(eventTask) {
     parentDiv.appendChild(lineBreak)
     parentDiv.appendChild(descTitle)
     parentDiv.appendChild(descDiv)
-    parentDiv.appendChild(lineBreak)
+    parentDiv.appendChild(lineBreak2)
 }
 
 //This function also updates current EventIndex to be the index of returned TASK
