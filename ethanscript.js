@@ -237,6 +237,14 @@ function generateDetailedView(eventTask) {
     dateDiv.id = "detailedview-date"
     dateDiv.innerHTML = mergedDateStr
 
+    //line section break for above and below Description
+    var lineBreak = document.createElement("hr")
+    lineBreak.classList.add("section-break")
+
+    var descTitle = document.createElement("div")
+    descTitle.id = "detailedview-desc-title"
+    descTitle.appendChild(document.createTextNode("Description:"))
+
     //appending children in order we want them to appear
     parentDiv.appendChild(dateDiv)
     parentDiv.appendChild(titleDiv)
@@ -249,7 +257,10 @@ function generateDetailedView(eventTask) {
         imgDiv.src = eventTask.getImgSrc()
         parentDiv.appendChild(imgDiv)
     }
+    parentDiv.appendChild(lineBreak)
+    parentDiv.appendChild(descTitle)
     parentDiv.appendChild(descDiv)
+    parentDiv.appendChild(lineBreak)
 }
 
 //This function also updates current EventIndex to be the index of returned TASK
