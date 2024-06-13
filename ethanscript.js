@@ -238,7 +238,7 @@ function generateDetailedView(eventTask) {
     dateDiv.innerHTML = mergedDateStr
 
     //line section break for above and below Description
-    var lineBreak = document.createElement("hr")
+    var lineBreak = document.createElement("div")
     lineBreak.classList.add("section-break")
 
     var descTitle = document.createElement("div")
