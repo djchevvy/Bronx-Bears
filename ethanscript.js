@@ -153,7 +153,7 @@ function generateCalendar(month, year) {
         const dayElement = document.createElement("div")
         dayElement.classList.add("calendar-day")
         //if statment checks if the day shold be part of the next month or previous month
-      //create previous and next month days
+        //create previous and next month days
         if (i < firstDayIndex || dayOfMonth > monthDays) {
             //edge case in january to prevent last month decemeber days having a month of zero and current year
             if (month == 0 && dayOfMonth < monthDays) {
@@ -227,10 +227,9 @@ function generateDetailedView(eventTask) {
     titleDiv.id = "detailedview-title"
     titleDiv.innerHTML = eventTask.getName()
 
-    var descDiv = document.createElement("div")
-    descDiv.classList.add("detailedview-desc")
-    descDiv.id = "detailedview-desc"
-    descDiv.innerHTML = eventTask.getDesc()
+
+
+
 
     var dateDiv = document.createElement("div")
     dateDiv.classList.add("detailedview-date")
@@ -259,9 +258,16 @@ function generateDetailedView(eventTask) {
         imgDiv.src = eventTask.getImgSrc()
         parentDiv.appendChild(imgDiv)
     }
-    parentDiv.appendChild(lineBreak)
-    parentDiv.appendChild(descTitle)
-    parentDiv.appendChild(descDiv)
+    
+    if (eventTask.getDesc() !== "none") {
+        parentDiv.appendChild(lineBreak)
+        parentDiv.appendChild(descTitle)
+        var descDiv = document.createElement("div")
+        descDiv.classList.add("detailedview-desc")
+        descDiv.id = "detailedview-desc"
+        descDiv.innerHTML = eventTask.getDesc()
+        parentDiv.appendChild(descDiv)
+    }
     parentDiv.appendChild(lineBreak2)
 }
 
@@ -337,7 +343,12 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             || monthDiff >= 2 && compareDate >= startDate && compareDate <= endDate) {
             currentMonthEvents.push(allEventsArr[i])
             let title = allEventsArr[i].querySelector(".event-name").textContent
-            let desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
+            if (allEventsArr[i].querySelector(".event-description").innerHTML !== null || allEventsArr[i].querySelector(".event-description").innerHTML !== "") {
+                let desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
+            } else {
+                let desc = "none"
+            }
+
             let startDate = allEventsArr[i].querySelector(".date").textContent
             let endDate = allEventsArr[i].querySelector(".end-date").textContent
             let imgSrc = allEventsArr[i].querySelector(".event-image").src
