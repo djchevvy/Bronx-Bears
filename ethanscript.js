@@ -344,7 +344,7 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             currentMonthEvents.push(allEventsArr[i])
             let title = allEventsArr[i].querySelector(".event-name").textContent
             let desc = ""
-            if (allEventsArr[i].querySelector(".event-description").innerHTML !== null || allEventsArr[i].querySelector(".event-description").innerHTML !== "") {
+            if (allEventsArr[i].querySelector(".event-description").innerHTML !== "") {
                 desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
             } else {
                 desc = "none"
