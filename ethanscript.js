@@ -343,10 +343,11 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             || monthDiff >= 2 && compareDate >= startDate && compareDate <= endDate) {
             currentMonthEvents.push(allEventsArr[i])
             let title = allEventsArr[i].querySelector(".event-name").textContent
+            let desc = ""
             if (allEventsArr[i].querySelector(".event-description").innerHTML !== null || allEventsArr[i].querySelector(".event-description").innerHTML !== "") {
-                let desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
+                desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
             } else {
-                let desc = "none"
+                desc = "none"
             }
 
             let startDate = allEventsArr[i].querySelector(".date").textContent
