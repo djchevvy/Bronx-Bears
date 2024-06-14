@@ -205,7 +205,7 @@ function generateCalendar(month, year) {
 //function generates divs for current event's data in the detailedview; function is passed current event to display as Task class object; function has no return
 function generateDetailedView(eventTask) {
     //places text in detailed view if no tasks exist in current month
-    if (eventTask.getName() === "There are currently no Events to display") {
+    if (eventTask.getName() === "There are currently no events to display") {
         var parentDiv = document.getElementById('detailedview-event-details')//the parent div where all info will be appended
         parentDiv.innerHTML = "" //clear previous content
         var titleDiv = document.createElement("div")
@@ -277,7 +277,7 @@ function generateDetailedView(eventTask) {
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
-        var emptyTSK = new Task("There are currently no Events to display", "none", "none", "none", "none", "none")
+        var emptyTSK = new Task("There are currently no events to display", "none", "none", "none", "none", "none")
         return emptyTSK
     }
     for (let i = 0; i < list.length; i++) {
