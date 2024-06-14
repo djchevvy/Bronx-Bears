@@ -153,7 +153,7 @@ function generateCalendar(month, year) {
         const dayElement = document.createElement("div")
         dayElement.classList.add("calendar-day")
         //if statment checks if the day shold be part of the next month or previous month
-      //create previous and next month days
+        //create previous and next month days
         if (i < firstDayIndex || dayOfMonth > monthDays) {
             //edge case in january to prevent last month decemeber days having a month of zero and current year
             if (month == 0 && dayOfMonth < monthDays) {
@@ -205,7 +205,7 @@ function generateCalendar(month, year) {
 //function generates divs for current event's data in the detailedview; function is passed current event to display as Task class object; function has no return
 function generateDetailedView(eventTask) {
     //places text in detailed view if no tasks exist in current month
-    if (eventTask.getName() === "There are currently no Events to display") {
+    if (eventTask.getName() === "There are currently no events to display") {
         var parentDiv = document.getElementById('detailedview-event-details')//the parent div where all info will be appended
         parentDiv.innerHTML = "" //clear previous content
         var titleDiv = document.createElement("div")
@@ -227,10 +227,9 @@ function generateDetailedView(eventTask) {
     titleDiv.id = "detailedview-title"
     titleDiv.innerHTML = eventTask.getName()
 
-    var descDiv = document.createElement("div")
-    descDiv.classList.add("detailedview-desc")
-    descDiv.id = "detailedview-desc"
-    descDiv.innerHTML = eventTask.getDesc()
+
+
+
 
     var dateDiv = document.createElement("div")
     dateDiv.classList.add("detailedview-date")
@@ -259,9 +258,16 @@ function generateDetailedView(eventTask) {
         imgDiv.src = eventTask.getImgSrc()
         parentDiv.appendChild(imgDiv)
     }
-    parentDiv.appendChild(lineBreak)
-    parentDiv.appendChild(descTitle)
-    parentDiv.appendChild(descDiv)
+    
+    if (eventTask.getDesc() !== "none") {
+        parentDiv.appendChild(lineBreak)
+        parentDiv.appendChild(descTitle)
+        var descDiv = document.createElement("div")
+        descDiv.classList.add("detailedview-desc")
+        descDiv.id = "detailedview-desc"
+        descDiv.innerHTML = eventTask.getDesc()
+        parentDiv.appendChild(descDiv)
+    }
     parentDiv.appendChild(lineBreak2)
 }
 
@@ -271,7 +277,7 @@ function generateDetailedView(eventTask) {
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
-        var emptyTSK = new Task("There are currently no Events to display", "none", "none", "none", "none", "none")
+        var emptyTSK = new Task("There are currently no events to display", "none", "none", "none", "none", "none")
         return emptyTSK
     }
     for (let i = 0; i < list.length; i++) {
@@ -337,7 +343,17 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             || monthDiff >= 2 && compareDate >= startDate && compareDate <= endDate) {
             currentMonthEvents.push(allEventsArr[i])
             let title = allEventsArr[i].querySelector(".event-name").textContent
-            let desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
+            let desc = ""
+            if (allEventsArr[i].querySelector(".event-description").innerHTML !== "") {
+                try {
+                    desc = allEventsArr[i].querySelector(".event-description").getElementsByTagName('p')[0].innerText
+                } catch (error) {
+                    desc = allEventsArr[i].querySelector(".event-description").innerText
+                }
+            } else {
+                desc = "none"
+            }
+
             let startDate = allEventsArr[i].querySelector(".date").textContent
             let endDate = allEventsArr[i].querySelector(".end-date").textContent
             let imgSrc = allEventsArr[i].querySelector(".event-image").src
