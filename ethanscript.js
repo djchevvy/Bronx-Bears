@@ -1995,8 +1995,10 @@ function calcGridBoxHeight(year, month){
     let numrows = getTotalDays(year,month+1) / 7 //numrows will always be divisible by 7
     let height = 0 //height of each individual gridbox
     if(document.getElementsByClassName('calendar-day')[0] != null){
-        let boxDiv = document.getElementsByClassName('calendar-day')[0] != null
-        boxDiv.style.height = `${700 / numrows}px` //this calculates the height for our day grid box
+        let boxDivs = document.getElementsByClassName('calendar-day')
+        for(let i =0; i< boxDivs.length; i++){
+            boxDivs[i].style.height = `${700 / numrows}px` //this calculates the height for our day grid box
+        }
     }
     else{
         console.log("error: finding calendar-day div for height calculation")
