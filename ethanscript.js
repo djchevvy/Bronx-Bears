@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
     currentMonthTasks = heapSort(currentMonthTasks)
     let temp = months[currentMonth] + " " + today + ", " + currentYear
     generateCalendar(currentMonth, currentYear);
-    calcGridBoxHeight(currentMonthTasks, currentYear, currentMonth) //calculates day grid height to fit within 700px
+    calcGridBoxHeight(currentYear, currentMonth) //calculates day grid height to fit within 700px
     generateDetailedView(getClosestEvent(temp, currentMonthTasks)) //get closest task to current date as of calendar loading and place in detailed view
 });
 //indexes month backward and recalls associated functions to setup calendar
@@ -76,7 +76,7 @@ document.getElementById('prev-year').addEventListener('click', () => {
     generateCurrentMonthEvents(allEvents, currentMonth, currentYear)
     currentMonthTasks = heapSort(currentMonthTasks)
     generateCalendar(currentMonth, currentYear);
-    calcGridBoxHeight(currentMonthTasks, currentYear, currentMonth) //calculates day grid height to fit within 700px
+    calcGridBoxHeight(currentYear, currentMonth) //calculates day grid height to fit within 700px
     let temp = months[currentMonth] + " 1, " + currentYear
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
 });
@@ -90,7 +90,7 @@ document.getElementById('next-year').addEventListener('click', () => {
     generateCurrentMonthEvents(allEvents, currentMonth, currentYear)
     currentMonthTasks = heapSort(currentMonthTasks)
     generateCalendar(currentMonth, currentYear);
-    calcGridBoxHeight(currentMonthTasks, currentYear, currentMonth) //calculates day grid height to fit within 700px
+    calcGridBoxHeight(currentYear, currentMonth) //calculates day grid height to fit within 700px
     let temp = months[currentMonth] + " 1, " + currentYear
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
 });
@@ -1993,7 +1993,6 @@ function heapSort(eventsArr) {
 //to fit within a 700px container div
 function calcGridBoxHeight(year, month){
     let numrows = getTotalDays(year,month+1) / 7 //numrows will always be divisible by 7
-    let height = 0 //height of each individual gridbox
     if(document.getElementsByClassName('calendar-day')[0] != null){
         let boxDivs = document.getElementsByClassName('calendar-day')
         for(let i =0; i< boxDivs.length; i++){
