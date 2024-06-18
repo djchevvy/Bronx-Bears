@@ -1755,7 +1755,7 @@ function getTotalDays(year, month) {
             totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
         }
     }
-    else if (month == (1 || 3 || 5 || 7 || 8 || 10 || 12)) {
+    else if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
         numRows = getRowOfDate(months[month - 1], 31, year)
         if (numRows != -1) {
             totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
