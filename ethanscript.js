@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
     currentMonthTasks = heapSort(currentMonthTasks)
     let temp = months[currentMonth] + " " + today + ", " + currentYear
     generateCalendar(currentMonth, currentYear);
+    calcGridBoxHeight(currentMonthTasks, currentYear, currentMonth) //calculates day grid height to fit within 700px
     generateDetailedView(getClosestEvent(temp, currentMonthTasks)) //get closest task to current date as of calendar loading and place in detailed view
 });
 //indexes month backward and recalls associated functions to setup calendar
@@ -75,6 +76,7 @@ document.getElementById('prev-year').addEventListener('click', () => {
     generateCurrentMonthEvents(allEvents, currentMonth, currentYear)
     currentMonthTasks = heapSort(currentMonthTasks)
     generateCalendar(currentMonth, currentYear);
+    calcGridBoxHeight(currentMonthTasks, currentYear, currentMonth) //calculates day grid height to fit within 700px
     let temp = months[currentMonth] + " 1, " + currentYear
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
 });
@@ -88,6 +90,7 @@ document.getElementById('next-year').addEventListener('click', () => {
     generateCurrentMonthEvents(allEvents, currentMonth, currentYear)
     currentMonthTasks = heapSort(currentMonthTasks)
     generateCalendar(currentMonth, currentYear);
+    calcGridBoxHeight(currentMonthTasks, currentYear, currentMonth) //calculates day grid height to fit within 700px
     let temp = months[currentMonth] + " 1, " + currentYear
     generateDetailedView(getClosestEvent(temp, currentMonthTasks))
 });
@@ -240,7 +243,7 @@ function generateDetailedView(eventTask) {
     var lineBreak = document.createElement("div")
     lineBreak.classList.add("section-break")
     var lineBreak2 = document.createElement("div")
-    lineBreak2.classList.add("section-break")
+    lineBreak2.classList.add("section-break") //not currently used
 
     var descTitle = document.createElement("div")
     descTitle.id = "detailedview-desc-title"
@@ -268,7 +271,7 @@ function generateDetailedView(eventTask) {
         descDiv.innerHTML = eventTask.getDesc()
         parentDiv.appendChild(descDiv)
     }
-    parentDiv.appendChild(lineBreak2)
+    //parentDiv.appendChild(lineBreak2)
 }
 
 //This function also updates current EventIndex to be the index of returned TASK
@@ -1983,3 +1986,19 @@ function heapSort(eventsArr) {
     }//end while
     return sortedList;
 }//end heapsort function
+
+//PARAMS: Tasks arr, year, month
+//RETURN: none
+//Function takes currentYear, and currentMonth and calculates how large the grid box should be
+//to fit within a 700px container div
+function calcGridBoxHeight(year, month){
+    let numrows = getTotalDays(year,month+1) / 7 //numrows will always be divisible by 7
+    let height = 0 //height of each individual gridbox
+    if(document.getElementsByClassName('calendar-day')[0] != null){
+        let boxDiv = document.getElementsByClassName('calendar-day')[0] != null
+        boxDiv.style.height = `${700 / numrows}px` //this calculates the height for our day grid box
+    }
+    else{
+        console.log("error: finding calendar-day div for height calculation")
+    }
+}//end function calcGridBoxHeight
