@@ -9,13 +9,15 @@
    for all variables. And a setter for an index.
    */
 class Task {
-    constructor(name, desc, date, endDate, imgSrc, index) {
+    constructor(name = "", desc = "", date = "", endDate = "", imgSrc = "", startTime = "", endTime = "", index = "") {
         //all vars are strings
         this.name = name
         this.date = date
         this.endDate = endDate
         this.desc = desc
         this.imgSrc = imgSrc
+        this.startTime = startTime
+        this.endTime = endTime
         this.index = index
     }
     getName() {
@@ -35,6 +37,12 @@ class Task {
     }
     getIndex() {
         return this.index
+    }
+    getStartTime() {
+        return this.startTime
+    }
+    getEndTime() {
+        return this.endTime
     }
     setIndex(index) {
         this.index = index
@@ -220,7 +228,7 @@ function generateDetailedView(eventTask) {
         return
     }
     //normal event placing operation
-    var mergedDateStr = mergeStart_EndDates(eventTask.getDate(), eventTask.getEndDate())
+    var mergedDateStr = mergeStart_EndDates(eventTask.getDate(), eventTask.getEndDate(), eventTask.getStartTime(), eventTask.getEndTime())
     //creating divs for each element of the Current Event (img optional currently 6/12/24)
 
     var parentDiv = document.getElementById('detailedview-event-details')
@@ -229,10 +237,6 @@ function generateDetailedView(eventTask) {
     titleDiv.classList.add("detailedview-title")
     titleDiv.id = "detailedview-title"
     titleDiv.innerHTML = eventTask.getName()
-
-
-
-
 
     var dateDiv = document.createElement("div")
     dateDiv.classList.add("detailedview-date")
@@ -252,17 +256,17 @@ function generateDetailedView(eventTask) {
     //appending children in order we want them to appear
     parentDiv.appendChild(dateDiv)
     parentDiv.appendChild(titleDiv)
-    //if the event has no image, the Task object will hold "none" under image source. 
+    //if the event has no image, the Task object will hold "" under image source. (this applies to all fields that are empty)
     //If this is the case, the event view will not append an image div 
-    if (eventTask.getImgSrc() != "none") {
+    if (eventTask.getImgSrc() != "") {
         var imgDiv = document.createElement("img")
         imgDiv.classList.add("detailedview-img")
         imgDiv.id = "detailedview-img"
         imgDiv.src = eventTask.getImgSrc()
         parentDiv.appendChild(imgDiv)
     }
-    
-    if (eventTask.getDesc() !== "none") {
+
+    if (eventTask.getDesc() !== "") {
         parentDiv.appendChild(lineBreak)
         parentDiv.appendChild(descTitle)
         var descDiv = document.createElement("div")
@@ -280,7 +284,7 @@ function generateDetailedView(eventTask) {
 function getClosestEvent(matchDate, list) {
     var closestTSK = list[0]
     if (list.length == 0) {
-        var emptyTSK = new Task("There are currently no events to display", "none", "none", "none", "none", "none")
+        var emptyTSK = new Task("There are currently no events to display")
         return emptyTSK
     }
     for (let i = 0; i < list.length; i++) {
@@ -315,6 +319,8 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
         startMonthNum = startMonthNum.getMonth() + 1
         let endMonthNum = new Date(`${endMonth} ${endDay}, ${endYear}`)
         endMonthNum = endMonthNum.getMonth() + 1
+        let startTime = parseTime(allEventsArr[i].querySelector(".start-Time"))
+        let endTime = parseTime(allEventsArr[i].querySelector(".end-Time"))
         let eventOnPage = false
         let totalDays = 0
         totalDays = getTotalDays(startYear, month + 1)
@@ -353,8 +359,6 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
                 } catch (error) {
                     desc = allEventsArr[i].querySelector(".event-description").innerText
                 }
-            } else {
-                desc = "none"
             }
 
             let startDate = allEventsArr[i].querySelector(".date").textContent
@@ -363,9 +367,19 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
             //making image element optional
             //query selector should return null when no div is found
             if (imgSrc === "https://cdn.prod.website-files.com/plugins/Basic/assets/placeholder.60f9b1840c.svg" || imgSrc == null) {
-                imgSrc = "none"
+                imgSrc = ""
             }
-            let tmpTask = new Task(title, desc, startDate, endDate, imgSrc, -1)
+
+            if (startTime === -1) {
+                //edge case checking that parseTime did not return error or that the event sent no time field
+                startTime = ""
+            }
+
+            if (endTime === -1) {
+                //edge case checking that parseTime did not return error
+                endTime = ""
+            }
+            let tmpTask = new Task(title, desc, startDate, endDate, imgSrc, startTime, endTime - 1)//creates event as Task Object
             currentMonthTasks.push(tmpTask)
         }
     }//end for
@@ -1830,7 +1844,7 @@ function getRowOfDate(month, day, year, endYear = year) {
 //RETURN: returns a merged string in format "STARTMONTH STARTDAY- ENDMONTH ENDDAY"
 //dynamically generates detailedView date banner; takes paramters start and end date in format "May 9, 2024"
 //returns a merged date string that show the span between months excluding the year
-function mergeStart_EndDates(dateStr, endDateStr) {
+function mergeStart_EndDates(dateStr, endDateStr, sTime, eTime) {
     var startDay = parseDay(dateStr)
     var endDay = parseDay(endDateStr)
     var startMonth = parseMonth(dateStr)
@@ -1838,22 +1852,71 @@ function mergeStart_EndDates(dateStr, endDateStr) {
     //var startYear = parseYear(dateStr)
     //var endYear = parseYear(endDateStr)
     var spanDateStr = ""
-    //for multi day events we must check wether or not it spans multiple months
-    if (startMonth != endMonth) {
-        spanDateStr = startMonth + " " + startDay + " - " + endMonth + " " + endDay
-    }
 
-    //same month and day event
-    else if (startMonth == startMonth && startDay == endDay) {
-        spanDateStr = startMonth + " " + startDay
-    }
+    //if the event has no associated times, or the event runs "ALL DAY", dont put time in date Banner
+    if (sTime === "" && eTime === "" || sTime === "00:00:00" && eTime == "23:59:59") {
+        //for multi day events we must check wether or not it spans multiple months
+        if (startMonth != endMonth) {
+            spanDateStr = startMonth + " " + startDay + " - " + endMonth + " " + endDay
+        }
 
-    //same month different day event
+        //same month and day event
+        else if (startMonth == startMonth && startDay == endDay) {
+            spanDateStr = startMonth + " " + startDay
+        }
+
+        //same month different day event
+        else {
+            spanDateStr = startMonth + " " + startDay + " - " + endDay
+        }
+    }
+    //Event Has time fields
     else {
-        spanDateStr = startMonth + " " + startDay + " - " + endDay
-    }
-    //for multi day events we must check wether or not it spans multiple years 
-    //(do we realistically need this?)
+        var sT = new Date(`Jan 1, 2020 ${sTime}`);
+        var eT = new Date(`Jan 1, 2020 ${eTime}`);
+        var finalStartTime = ""
+        var finalEndTime = ""
+        var timeArr = []
+        timeArr.push(sT)
+        timeArr.push(eT)
+        for (let i = 0; i < timeArr.length; i++) {
+            var hours = timeArr[i].getHours(); // gives the value in 24 hours format
+            var AmOrPm = hours >= 12 ? 'pm' : 'am';
+            hours = (hours % 12) || 12;
+            var minutes = timeArr[i].getMinutes();
+            //appends zero to front
+            if (minutes === 0) {
+                minutes = "00"
+            }//appends zero to front
+            else if(minutes < 10){
+                minutes = `0${minutes}`
+            }
+            //startTime
+            if(i == 0){
+                finalStartTime = hours + ":" + minutes + AmOrPm;
+            }
+            //endTime
+            if(i == 1){
+                finalEndTime = hours + ":" + minutes + AmOrPm;
+            }
+        }//end for
+
+        
+        //for multi day events we must check wether or not it spans multiple months
+        if (startMonth != endMonth) {
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endMonth + " " + endDay + " " + finalEndTime
+        }
+
+        //same month and day event
+        else if (startMonth == startMonth && startDay == endDay) {
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + ` - ${finalEndTime}`
+        }
+
+        //same month different day event
+        else {
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endDay + + ` ${finalEndTime}`
+        }
+    }//end else
 
     return spanDateStr
 }//end func
@@ -1907,6 +1970,21 @@ function parseYear(str) {
     }
     else {
         console.log("Error Parsing string Year: function parseYear(str)")
+        return -1
+    }
+}
+//PARAMETERS: str: parses Time # out of formatted str ex. "May 9, 2024 23:59:59"
+//RETURN: returns Time # as str ex. "23:59:59"
+//function to parse year from date string in format "mmm, dd yyyy TT:TT:TT"
+function parseTime(str) {
+    const regex = /\b(\d{2}:\d{2}:\d{2})\b/;
+    const token = str.match(regex);
+
+    if (token) {
+        return token[0]
+    }
+    else {
+        console.log("Error Parsing string Time: function parseTime(str)")
         return -1
     }
 }
@@ -1991,15 +2069,15 @@ function heapSort(eventsArr) {
 //RETURN: none
 //Function takes currentYear, and currentMonth and calculates how large the grid box should be
 //to fit within a 700px container div
-function calcGridBoxHeight(year, month){
-    let numrows = getTotalDays(year,month+1) / 7 //numrows will always be divisible by 7
-    if(document.getElementsByClassName('calendar-day')[0] != null){
+function calcGridBoxHeight(year, month) {
+    let numrows = getTotalDays(year, month + 1) / 7 //numrows will always be divisible by 7
+    if (document.getElementsByClassName('calendar-day')[0] != null) {
         let boxDivs = document.getElementsByClassName('calendar-day')
-        for(let i =0; i< boxDivs.length; i++){
+        for (let i = 0; i < boxDivs.length; i++) {
             boxDivs[i].style.height = `${700 / numrows}px` //this calculates the height for our day grid box
         }
     }
-    else{
+    else {
         console.log("error: finding calendar-day div for height calculation")
     }
 }//end function calcGridBoxHeight
