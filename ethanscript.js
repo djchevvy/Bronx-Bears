@@ -319,8 +319,8 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
         startMonthNum = startMonthNum.getMonth() + 1
         let endMonthNum = new Date(`${endMonth} ${endDay}, ${endYear}`)
         endMonthNum = endMonthNum.getMonth() + 1
-        let startTime = parseTime(allEventsArr[i].querySelector(".start-time"))
-        let endTime = parseTime(allEventsArr[i].querySelector(".end-time"))
+        let startTime = parseTime(allEventsArr[i].querySelector(".start-time").textContent)
+        let endTime = parseTime(allEventsArr[i].querySelector(".end-time").textContent)
         let eventOnPage = false
         let totalDays = 0
         totalDays = getTotalDays(startYear, month + 1)
