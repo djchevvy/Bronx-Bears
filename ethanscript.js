@@ -1978,7 +1978,7 @@ function parseYear(str) {
 //function to parse year from date string in format "mmm, dd yyyy TT:TT:TT"
 function parseTime(str) {
     const regex = /\b(\d{2}:\d{2}:\d{2})\b/;
-    const token = str.match(regex);
+    const token = regex.exec(str)
 
     if (token) {
         return token[0]
