@@ -1914,7 +1914,7 @@ function mergeStart_EndDates(dateStr, endDateStr, sTime, eTime) {
 
         //same month different day event
         else {
-            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endDay + + ` ${finalEndTime}`
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endDay + ` ${finalEndTime}`
         }
     }//end else
 
