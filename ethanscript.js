@@ -2007,7 +2007,7 @@ function assembleMonthViewDateStr(str) {
 
 //Heap sort takes in an array and sorts the array by starting date
 //passed array of task class objects, and returns a sorted array of those objects
-//Upper Bounded Runtime: O(nlogn)
+//Upper Bounded Runtime: O(n^2) (due to bubble sort same day case)
 function heapSort(eventsArr) {
     /** Create a heap from an array of objects */
     var list = [];
@@ -2068,7 +2068,22 @@ function heapSort(eventsArr) {
         }//end for
     }//end while
 
-    //sort same starting day events in order
+    //sort same starting day events in order (Bubble Sort)
+    for (let i = 0; i < sortedList.length; i++) {
+        for (let childInd = 0; childInd < sortedList.length - i - 1; childInd++) {
+            //for correct array order when placing events
+            //edge case to place varying length events that start on same day in decending order of banner length by days
+            if (Date.parse(sortedList[childInd+1].getDate()) === Date.parse(sortedList[childInd].getDate())) {
+                if (Math.abs(Date.parse(sortedList[childInd].getDate()) - Date.parse(sortedList[childInd].getEndDate())) < Math.abs(Date.parse(sortedList[childInd+1].getDate()) - Date.parse(sortedList[childInd+1].getEndDate()))) {
+                    //swap parent and child node
+                    var childElem = sortedList.splice(childInd+1, 1, sortedList[childInd])[0]
+                    sortedList[childInd] = childElem
+                }
+            }
+        }
+    }
+
+
     return sortedList;
 }//end heapsort function
 
