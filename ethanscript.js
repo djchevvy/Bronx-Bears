@@ -2033,7 +2033,7 @@ function heapSort(eventsArr) {
                 //for correct array order when placing events
                 //edge case to place varying length events that start on same day in decending order of banner length by days
                 else if (Date.parse(list[parentInd].getDate()) === Date.parse(list[childInd].getDate())) {
-                    if (Math.abs(Date.parse(list[parentInd].getDate()) - Date.parse(list[parentInd].getEndDate())) > Math.abs(Date.parse(list[childInd].getDate()) - Date.parse(list[childInd].getEndDate()))) {
+                    if (Math.abs(Date.parse(list[parentInd].getDate()) - Date.parse(list[parentInd].getEndDate())) < Math.abs(Date.parse(list[childInd].getDate()) - Date.parse(list[childInd].getEndDate()))) {
                         //swap parent and child node
                         var childElem = list.splice(childInd, 1, list[parentInd])[0]
                         list[parentInd] = childElem
