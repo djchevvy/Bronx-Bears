@@ -379,7 +379,7 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
                 //edge case checking that parseTime did not return error
                 endTime = ""
             }
-            let tmpTask = new Task(title, desc, startDate, endDate, imgSrc, startTime, endTime - 1)//creates event as Task Object
+            let tmpTask = new Task(title, desc, startDate, endDate, imgSrc, startTime, endTime, - 1)//creates event as Task Object
             currentMonthTasks.push(tmpTask)
         }
     }//end for
