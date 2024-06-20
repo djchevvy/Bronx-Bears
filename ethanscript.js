@@ -1888,20 +1888,20 @@ function mergeStart_EndDates(dateStr, endDateStr, sTime, eTime) {
             if (minutes === 0) {
                 minutes = "00"
             }//appends zero to front
-            else if(minutes < 10){
+            else if (minutes < 10) {
                 minutes = `0${minutes}`
             }
             //startTime
-            if(i == 0){
+            if (i == 0) {
                 finalStartTime = hours + ":" + minutes + AmOrPm;
             }
             //endTime
-            if(i == 1){
+            if (i == 1) {
                 finalEndTime = hours + ":" + minutes + AmOrPm;
             }
         }//end for
 
-        
+
         //for multi day events we must check wether or not it spans multiple months
         if (startMonth != endMonth) {
             spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endMonth + " " + endDay + " " + finalEndTime
@@ -1977,13 +1977,13 @@ function parseYear(str) {
 //RETURN: returns Time # as str ex. "23:59:59"
 //function to parse year from date string in format "mmm, dd yyyy TT:TT:TT"
 function parseTime(str) {
-    if(str === null || str === ""){
+    if (str === null || str === "") {
         //the event had no time
         return ""
     }
     const regex = /\b(\d{2}:\d{2}:\d{2})\b/;
     const token = regex.exec(str)
-    
+
     if (token) {
         return token[0]
     }
@@ -2029,6 +2029,15 @@ function heapSort(eventsArr) {
                     //swap parent and child node
                     var childElem = list.splice(childInd, 1, list[parentInd])[0]
                     list[parentInd] = childElem
+                }
+                //for correct array order when placing events
+                //edge case to place varying length events that start on same day in decending order of banner length by days
+                else if (Date.parse(list[parentInd].getDate()) === Date.parse(list[childInd].getDate())) {
+                    if (Math.abs(Date.parse(list[parentInd].getDate()) - Date.parse(list[parentInd].getEndDate())) > Math.abs(Date.parse(list[childInd].getDate()) - Date.parse(list[childInd].getEndDate()))) {
+                        //swap parent and child node
+                        var childElem = list.splice(childInd, 1, list[parentInd])[0]
+                        list[parentInd] = childElem
+                    }
                 }
             }
         }//end else
