@@ -319,8 +319,8 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
         startMonthNum = startMonthNum.getMonth() + 1
         let endMonthNum = new Date(`${endMonth} ${endDay}, ${endYear}`)
         endMonthNum = endMonthNum.getMonth() + 1
-        let startTime = parseTime(allEventsArr[i].querySelector(".start-Time"))
-        let endTime = parseTime(allEventsArr[i].querySelector(".end-Time"))
+        let startTime = parseTime(allEventsArr[i].querySelector(".start-time"))
+        let endTime = parseTime(allEventsArr[i].querySelector(".end-time"))
         let eventOnPage = false
         let totalDays = 0
         totalDays = getTotalDays(startYear, month + 1)
@@ -1977,13 +1977,18 @@ function parseYear(str) {
 //RETURN: returns Time # as str ex. "23:59:59"
 //function to parse year from date string in format "mmm, dd yyyy TT:TT:TT"
 function parseTime(str) {
+    if(str === null || str === ""){
+        //the event had no time
+        return ""
+    }
     const regex = /\b(\d{2}:\d{2}:\d{2})\b/;
     const token = regex.exec(str)
-
+    
     if (token) {
         return token[0]
     }
     else {
+        //error parsing the time from passed string
         console.log("Error Parsing string Time: function parseTime(str)")
         return -1
     }
