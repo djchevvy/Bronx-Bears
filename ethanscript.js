@@ -1650,12 +1650,13 @@ function placeEvents(events) {
 
                 //edge Case B, append element as first Event (under div day num)
                 let classList = parent.classList //search this for caseb
-                let casebEvent = false //denotes if an event should follow case b placement procedure
+                let casebPrevEvent = false //denotes if a day on the page is already marked as caseB should follow case b placement procedure, but not COMPUTATION
+                let casebEvent = false //day is not currently marked as case b, but could potentially be a case b
                 let casebToken = "" //token of class list containing # of events that can be placed under caseb protocol
                 for (let j = 0; j < classList.length; j++) {
                     if (classList[i].includes('caseb')) {
                         casebToken = classList[i]
-                        casebEvent = true
+                        casebPrevEvent = true
                     }
                 }
 
@@ -1666,7 +1667,7 @@ function placeEvents(events) {
                     //previous event banner started earlier in week and spans through at least current date && !caseb event, bc we don't want to recheck case b days
                     //find correct startDate of banner
                     let startDate = "" //holds date in format yyyy-mm-dd
-                    if (taskChildren.length === 0 && blankChildren.length > 0 && !casebEvent) {
+                    if (taskChildren.length === 0 && blankChildren.length > 0 && !casebPrevEvent) {
                         let year = parseDayBoxIdDate(currentEventBannerDates[i], true, false, false)
                         let month = parseDayBoxIdDate(currentEventBannerDates[i], false, true, false)
                         let day = parseDayBoxIdDate(currentEventBannerDates[i], false, false, true) + 1 //month boudary check needed here
@@ -1682,17 +1683,19 @@ function placeEvents(events) {
                                 }//end outer if
                             }//end for
                             taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
+                            casebEvent = true // this is a current caseb event
                         }
                     }//end if taskChildren.length === 0 && blankChildren.length > 0 && !casebEvent
                         //event banner starts on same day as event we are currently trying to place (startDate can simply be currentEventBannerDates[i])
-                        else if (taskChildren.length !== 0 && !casebEvent) {
+                        else if (taskChildren.length !== 0 && !casebPrevEvent) {
                             startDate = currentEventBannerDates[i]
+                            casebEvent = true // this is a current caseb event
                         }
 
                         //CASE B COMPUTATION
                         //compare lengths of banner that currently exists on page, and new banner we're trying to place
                         //if current on page is shorter than banner we are trying to place, then CASE B is in effect
-                        if (!casebEvent) {
+                        if (casebEvent && !casebPrevEvent) {
                             if (taskChildren[taskChildren.length - 1].offsetWidth < currentEventBannerDivs[i].offsetWidth) {
                                 //determine end date of current banner, and that day's index within the current week
                                 let numDays = parseInt(taskChildren[taskChildren.length - 1].classList[1]) //number of days banner on page spans
@@ -1715,8 +1718,8 @@ function placeEvents(events) {
                                 }
                             }//end if
                         }
-
-                        if (casebEvent) {
+                        //case b PLACEMENT procedure
+                        if (casebEvent || casebPrevEvent) {
                             let id = `monthview-daynum-${parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)}`
                             let dayNumDiv = document.getElementById(id)
                             dayNumDiv.insertAdjacentElement("afterend", currentEventBannerDivs[i]) //inserts banner below the day number in that day grid box
