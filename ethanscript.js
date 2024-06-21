@@ -9,7 +9,7 @@
    for all variables. And a setter for an index.
    */
 class Task {
-    constructor(name = "", desc = "", date = "", endDate = "", imgSrc = "", startTime = "", endTime = "", index = "") {
+    constructor(name = "", desc = "", date = "", endDate = "", imgSrc = "", startTime = "", endTime = "", key = "") {
         //all vars are strings
         this.name = name
         this.date = date
@@ -18,7 +18,7 @@ class Task {
         this.imgSrc = imgSrc
         this.startTime = startTime
         this.endTime = endTime
-        this.index = index
+        this.key = key
     }
     getName() {
         return this.name
@@ -35,8 +35,8 @@ class Task {
     getImgSrc() {
         return this.imgSrc
     }
-    getIndex() {
-        return this.index
+    getKey() {
+        return this.key
     }
     getStartTime() {
         return this.startTime
@@ -44,8 +44,8 @@ class Task {
     getEndTime() {
         return this.endTime
     }
-    setIndex(index) {
-        this.index = index
+    setKey(key) {
+        this.key = key
     }
 }//end task class
 //global variables
@@ -343,7 +343,15 @@ function generateCurrentMonthEvents(allEventsArr, month, year) {
         let firstOfCurMonthInd = new Date(`${year}-${month + 1}-1`).getDay()
         let daysInCurentMonth = new Date(year, month + 1, 0).getDate()
         let daysInLastMonth = new Date(year, month, 0).getDate()
-        let daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
+        let daysFromLastMonth = 0 //initialize
+        //edge case first of next month is zero (else condition), then the component Math.abs should be zero, (if condtion) we want difference
+        if(firstDayIndEndMonth !== 0){
+            daysFromLastMonth = totalDays - daysInCurentMonth - Math.abs(7 - firstDayIndEndMonth)
+        }
+        else{
+            daysFromLastMonth = totalDays - daysInCurentMonth
+        }
+        
         let startDayNum = parseInt(startDay) + daysInCurentMonth + daysFromLastMonth
 
         let startDate = new Date(`${startYear}-${startMonthNum}-1`).getTime()//event start date as first of month (for CASE 3 events w/ monthDiff > 3)
@@ -468,6 +476,7 @@ function placeEvents(events) {
         let tmpTask = events[i]
         const date = assembleMonthViewDateStr(tmpTask.getDate()) //reformats date str
         let name = tmpTask.getName()
+        let eventKey = tmpTask.getKey() //current event's unique key
         //if id date matches a calendar grid element && the task does not exist on the page, 
         let parent = document.getElementById(date)
         let extraTaskElem = null
@@ -507,12 +516,15 @@ function placeEvents(events) {
             if ((currentMonth + 2 == startMonthNum && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear) && startMonth == endMonth
                 || (endMonthNum == 1 && currentMonth == 11 && document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) != null && parseInt(startYear) == currentYear + 1) && startMonth == endMonth) {
                 let saveEndD = endDay
-                for (let i = startDay; i < saveEndD; i++) {
-                    if (document.getElementById(`${startYear}-${startMonthNum}-${i}`) != null) {
-                        endDay = i
-                    }
-                    else {
-                        break
+                //if end day is not on page, find last day in nxt month that is on page
+                if(document.getElementById(`${startYear}-${startMonthNum}-${endDay}`) == null){
+                    for (let i = startDay; i < saveEndD; i++) {
+                        if (document.getElementById(`${startYear}-${startMonthNum}-${i}`) != null) {
+                            endDay = i
+                        }
+                        else {
+                            break
+                        }
                     }
                 }
             }
@@ -524,8 +536,8 @@ function placeEvents(events) {
             tempDiv.classList.add("task")
             tempDiv.id = name
             tempDiv.innerHTML = name
-            if (searchEventTasks(events, name) != -1) {
-                tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+            if (searchEventTasks(events, eventKey) != -1) {
+                tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
             }
             else {
                 console.log("Error placing event lister on event: func placeEvents")
@@ -571,7 +583,7 @@ function placeEvents(events) {
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                     calcBannerWidth(tempDiv, Math.abs(startDay - spanNextRow[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
@@ -592,7 +604,7 @@ function placeEvents(events) {
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                     calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
                     //adding to banner dates array (here is each brkPt day)
@@ -613,7 +625,7 @@ function placeEvents(events) {
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                     calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
@@ -670,8 +682,8 @@ function placeEvents(events) {
                 tempDiv.classList.add("task")
                 tempDiv.id = name
                 tempDiv.innerHTML = name
-                if (searchEventTasks(events, name) != -1) {
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                if (searchEventTasks(events, eventKey) != -1) {
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                 }
                 else {
                     console.log("Error placing event lister on event: func placeEvents")
@@ -734,7 +746,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, daysBtwFirstRow+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -764,7 +776,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         currentEventBannerDivs.push(tempDiv)
                         calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         //adding to banner dates array (here is each brkPt day)
@@ -785,7 +797,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -861,7 +873,7 @@ function placeEvents(events) {
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                     calcBannerWidth(tempDiv, Math.abs(startDay - spanNextRow[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
@@ -892,7 +904,7 @@ function placeEvents(events) {
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                     calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
@@ -914,7 +926,7 @@ function placeEvents(events) {
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
-                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                    tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                     calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
@@ -1042,7 +1054,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) }) 
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) }) 
                         calcBannerWidth(tempDiv, Math.abs(startDay - spanNextRow[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1077,7 +1089,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1098,7 +1110,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1288,7 +1300,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, daysBtw+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1320,7 +1332,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1343,7 +1355,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1523,7 +1535,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, daysBtw+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
                         //push 0th row event banner
@@ -1558,7 +1570,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1580,7 +1592,7 @@ function placeEvents(events) {
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, eventKey)]) })
                         calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
@@ -1770,10 +1782,10 @@ function getTotalDays(year, month) {
 //PARAMETERS: events: currentMonthTasks Task class OBJ arr; name: name of current task (str)
 //RETURN:
 //given an event name, the function will search for it in currentMonthTasks and return the index of that task. returns -1 if not found
-function searchEventTasks(events, name) {
+function searchEventTasks(events, key) {
     for (let i = 0; i < events.length; i++) {
-        var tempName = events[i].getName()
-        if (tempName == name) {
+        var tempKey = events[i].getKey()
+        if (key === tempKey) {
             return i
         }
     }
@@ -2018,13 +2030,13 @@ function heapSort(eventsArr) {
 
     /** Continuously Remove the root from the Minheap to sort it*/
     var sortedList = []  //sorted list is the final sorted list after removing all elemtents from list
-    var curMonthTskInd = 0
+    var eventKey = 100 //this is the event key, it's used to differentiate tasks even if they have the exact same elements
     while (list.length != 0) {
         //removes from top
         var root = list.shift()
-        root.setIndex(curMonthTskInd)
+        root.setKey(eventKey)
         sortedList.push(root)
-        curMonthTskInd++
+        eventKey++
 
         //now check if list is empty bc we cannot heapify an empty list
         if (list.length == 0) {
