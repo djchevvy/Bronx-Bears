@@ -2123,4 +2123,4 @@ function calcBannerWidth(banner, numDays){
 }
 
 //page listener for window Resize
-document.addEventListener('resize', calcBannerWidthResize())
+document.addEventListener('resize', calcBannerWidthResize, false)
