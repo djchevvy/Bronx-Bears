@@ -2107,7 +2107,7 @@ function calcBannerWidthResize(){
     var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
 
     for(let i=0; i<banners.length; i++){
-        let classList = banners[i].classList.split(' ')
+        let classList = banners[i].classList.splice(' ')
         let numDays = parseInt(classList[1])
         var width = ((gridBoxW/viewPortW)*numDays - 40/viewPortW) //calculates how many days the banner should span across - 40px padding to grid box
         banner.style.cssText = `width: ${width}vw;` //sets banner width according to viewport size
