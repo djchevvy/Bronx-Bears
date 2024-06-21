@@ -1654,8 +1654,8 @@ function placeEvents(events) {
                 let casebEvent = false //day is not currently marked as case b, but could potentially be a case b
                 let casebToken = "" //token of class list containing # of events that can be placed under caseb protocol
                 for (let j = 0; j < classList.length; j++) {
-                    if (classList[i].includes('caseb')) {
-                        casebToken = classList[i]
+                    if (classList[j].includes('caseb')) {
+                        casebToken = classList[j]
                         casebPrevEvent = true
                     }
                 }
