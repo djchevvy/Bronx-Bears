@@ -2105,7 +2105,7 @@ function calcBannerWidthResize(){
 function calcBannerWidth(banner, numDays){
     var gridBoxW = document.getElementsByClassName("calendar-day")[0].clientWidth 
     var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-    var width = ((gridBoxW/viewPortW)*numDays - 30/viewPortW)*100 //calculates how many days the banner should span across - 30px padding to grid box
+    var width = Math.floor(((gridBoxW/viewPortW)*numDays - 20/viewPortW)*100) //calculates how many days the banner should span across - 30px padding to grid box
     banner.style.cssText = `width: ${width}vw;` //sets banner width according to viewport size
     banner.classList.add(`${numDays}`)//adding num days of event to banner classList for future use
 }
