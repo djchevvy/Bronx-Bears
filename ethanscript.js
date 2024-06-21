@@ -2109,16 +2109,18 @@ function calcBannerWidthResize(){
     for(let i=0; i<banners.length; i++){
         let classList = banners[i].classList
         let numDays = parseInt(classList[1])
-        var width = Math.floor(((gridBoxW/viewPortW)*numDays - 40/viewPortW)*100) //calculates how many days the banner should span across - 40px padding to grid box
-        banners[i].style.cssText = `width: ${width}vw;` //sets banner width according to viewport size
+        //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 40/viewPortW)*100) //calculates how many days the banner should span across - 40px padding to grid box
+        var width = gridBoxW*numDays - 20 //width of one grid box - 20px padding
+        banners[i].style.cssText = `width: ${width}px;` //sets banner width according to viewport size
     }
 }
 
 function calcBannerWidth(banner, numDays){
     var gridBoxW = document.getElementsByClassName("calendar-day")[0].clientWidth 
     var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-    var width = Math.floor(((gridBoxW/viewPortW)*numDays - 10/viewPortW)*100) //calculates how many days the banner should span across - 30px padding to grid box
-    banner.style.cssText = `width: ${width}vw;` //sets banner width according to viewport size
+    //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 10/viewPortW)*100) //calculates how many days the banner should span across - 30px padding to grid box
+    var width = gridBoxW*numDays - 20 //width of one grid box - 20px padding
+    banner.style.cssText = `width: ${width}px;` //sets banner width according to viewport size
     banner.classList.add(`${numDays}`)//adding num days of event to banner classList for future use
 }
 
