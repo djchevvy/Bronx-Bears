@@ -572,7 +572,7 @@ function placeEvents(events) {
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    calcBannerWidth(tempDiv, Math.abs(startDay - - spanNextRow[i])+1)//calculates banner width by total days spanned
+                    calcBannerWidth(tempDiv, Math.abs(startDay - spanNextRow[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
                     //adding to banner dates array (here is just start day)
