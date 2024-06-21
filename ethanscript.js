@@ -63,6 +63,8 @@ var currentMonthEvents = [];
 var currentMonthTasks = [];
 const allEvents = document.querySelectorAll('.events .event');
 
+
+
 //page load functions
 //Loads current month grid, closet event to current date into Event view, and determines all tasks that should exist on the current month
 document.addEventListener('DOMContentLoaded', function () {
@@ -158,8 +160,20 @@ function generateCalendar(month, year) {
     monthGrid.innerHTML = "";
     let idMonth = 0
     let idYear = year
-
+   // let weekDiv = document.createElement('div') //week div to contain 7 days
+    //weekDiv.id = `week-${weekNum}`
+    //weekDiv.classList.add("week-conatiner-div")
+    //let weekNum = 0 //number of week
     for (let i = 0; i < rowCount * 7; i++) {
+        /*
+        if(i % 7 == 0 && i !== 0){
+            monthGrid.append(weekDiv)
+            weekDiv = document.createElement('div')
+            weekDiv.id = `week-${weekNum}`
+            weekDiv.classList.add("week-conatiner-div")
+            weekNum++
+        }
+        */
         const dayOfMonth = i - firstDayIndex + 1;
         const dayElement = document.createElement("div")
         dayElement.classList.add("calendar-day")
@@ -207,6 +221,7 @@ function generateCalendar(month, year) {
             dayElement.appendChild(dayNum)
         }
         monthGrid.appendChild(dayElement)
+        //weekDiv.appendChild(dayElement)
     }//end for
     placeEvents(currentMonthTasks)
 }//end function generate calendar
@@ -505,7 +520,6 @@ function placeEvents(events) {
             else if (document.getElementById(`${startYear}-${startMonthNum}-${startDay}`) == null) {
                 startDay = firstDayLastMonth
             }
-            var width = Math.abs(startDay - endDay) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
             var tempDiv = document.createElement('div')
             tempDiv.classList.add("task")
             tempDiv.id = name
@@ -516,8 +530,7 @@ function placeEvents(events) {
             else {
                 console.log("Error placing event lister on event: func placeEvents")
             }
-
-            tempDiv.style.cssText = `width: ${width}vw;`
+            calcBannerWidth(tempDiv, Math.abs(startDay - endDay)+1)//calculates banner width by total days spanned
             currentEventBannerDivs.push(tempDiv)
             currentEventBannerDates.push(`${startYear}-${startMonthNum}-${startDay}`)
 
@@ -553,14 +566,13 @@ function placeEvents(events) {
             for (let i = 0; i < breakInd; i++) {
                 //0th row
                 if (i == 0) {
-                    var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                     //creating title div for monthview task
                     var tempDiv = document.createElement('div')
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    tempDiv.style.cssText = `width: ${width}vw;`
+                    calcBannerWidth(tempDiv, Math.abs(startDay - - spanNextRow[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
                     //adding to banner dates array (here is just start day)
@@ -575,17 +587,14 @@ function placeEvents(events) {
                 }
                 //ith row
                 if (i + 1 < breakPTArr.length) {
-                    var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                     //creating title div for monthview task
                     var tempDiv = document.createElement('div')
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    tempDiv.style.cssText = `width: ${width}vw;`
+                    calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
-                    tempDiv.style.cssText = `width: ${width}vw;`
-
                     //adding to banner dates array (here is each brkPt day)
                     currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
 
@@ -599,16 +608,15 @@ function placeEvents(events) {
 
                 //last row
                 else {
-                    var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                     //creating title div for monthview task
                     var tempDiv = document.createElement('div')
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    tempDiv.style.cssText = `width: ${width}vw;`
+                    calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
-                    tempDiv.style.cssText = `width: ${width}vw;`
+
 
                     //adding to banner dates array (here is last brkPt day)
                     currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
@@ -658,7 +666,6 @@ function placeEvents(events) {
             //single row width calc
             if (currentRow == getRowOfDate(endMonth, endDay, endYear)) {
                 //formats multi-day banner
-                var width = numDaysbtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                 var tempDiv = document.createElement('div')
                 tempDiv.classList.add("task")
                 tempDiv.id = name
@@ -669,8 +676,7 @@ function placeEvents(events) {
                 else {
                     console.log("Error placing event lister on event: func placeEvents")
                 }
-
-                tempDiv.style.cssText = `width: ${width}vw;`
+                calcBannerWidth(tempDiv, numDaysbtw+1)//calculates banner width by total days spanned
                 currentEventBannerDivs.push(tempDiv)
                 currentEventBannerDates.push(`${startYear}-${startMonthNum}-${startDay}`)
 
@@ -723,14 +729,13 @@ function placeEvents(events) {
                         let a = new Date(`${startYear}-${startMonth}-${startDay}`)
                         let a1 = new Date(`${endYear}-${endMonth}-${spanNextRow[i]}`)
                         let daysBtwFirstRow = Math.abs((a1.getTime() - a.getTime()) / (1000 * 60 * 60 * 24))
-                        var width = daysBtwFirstRow * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, daysBtwFirstRow+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
                         //adding to banner dates array (here is just start day)
@@ -754,17 +759,14 @@ function placeEvents(events) {
                     }
                     //ith row
                     if (i + 1 < breakPTArr.length) {
-                        var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
-
+                        calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         //adding to banner dates array (here is each brkPt day)
                         currentEventBannerDates.push(`${endYear}-${endMonthNum}-${breakPTArr[i]}`)
 
@@ -778,16 +780,14 @@ function placeEvents(events) {
 
                     //last row
                     else {
-                        var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is last brkPt day)
                         currentEventBannerDates.push(`${endYear}-${endMonthNum}-${breakPTArr[i]}`)
@@ -856,14 +856,13 @@ function placeEvents(events) {
             for (let i = 0; i < breakInd; i++) {
                 //0th row
                 if (i == 0) {
-                    var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                     //creating title div for monthview task
                     var tempDiv = document.createElement('div')
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    tempDiv.style.cssText = `width: ${width}vw;`
+                    calcBannerWidth(tempDiv, Math.abs(startDay - spanNextRow[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
 
                     //adding to banner dates array (here is just start day)
@@ -888,16 +887,14 @@ function placeEvents(events) {
                 }
                 //ith row
                 if (i + 1 < breakPTArr.length) {
-                    var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                     //creating title div for monthview task
                     var tempDiv = document.createElement('div')
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    tempDiv.style.cssText = `width: ${width}vw;`
+                    calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
-                    tempDiv.style.cssText = `width: ${width}vw;`
 
                     //adding to banner dates array (here is each brkPt day)
                     currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
@@ -912,16 +909,14 @@ function placeEvents(events) {
 
                 //last row
                 else {
-                    var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                     //creating title div for monthview task
                     var tempDiv = document.createElement('div')
                     tempDiv.classList.add("task")
                     tempDiv.id = name
                     tempDiv.innerHTML = name
                     tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                    tempDiv.style.cssText = `width: ${width}vw;`
+                    calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                     currentEventBannerDivs.push(tempDiv)
-                    tempDiv.style.cssText = `width: ${width}vw;`
 
                     //adding to banner dates array (here is last brkPt day)
                     currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
@@ -1042,14 +1037,13 @@ function placeEvents(events) {
                 for (let i = 0; i < breakInd; i++) {
                     //0th row
                     if (i == 0) {
-                        var width = Math.abs(startDay - spanNextRow[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
-                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) }) 
+                        calcBannerWidth(tempDiv, Math.abs(startDay - spanNextRow[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
                         //adding to banner dates array (here is just start day)
@@ -1078,16 +1072,14 @@ function placeEvents(events) {
                     }
                     //ith row
                     if (i + 1 < breakPTArr.length) {
-                        var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is each brkPt day)
                         currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
@@ -1101,16 +1093,14 @@ function placeEvents(events) {
                     }
                     //last row
                     else {
-                        var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is last brkPt day)
                         currentEventBannerDates.push(`${startYear}-${startMonthNum}-${breakPTArr[i]}`)
@@ -1293,14 +1283,13 @@ function placeEvents(events) {
                         let eD = new Date(`${currentYear}-${currentMonth + 1}-${spanNextRow[i]}`)//end Date as OBJ
                         daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
 
-                        var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, daysBtw+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
 
                         //adding to banner dates array (here is just start day)
@@ -1326,16 +1315,15 @@ function placeEvents(events) {
                     }
                     //ith row
                     if (i + 1 < breakPTArr.length) {
-                        var width = Math.abs(spanNextRow[i + 1] - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
+
 
                         //adding to banner dates array (here is each brkPt day)
                         currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
@@ -1350,16 +1338,14 @@ function placeEvents(events) {
 
                     //last row
                     else {
-                        var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is last brkPt day)
                         currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
@@ -1532,14 +1518,13 @@ function placeEvents(events) {
                             eD = new Date(`${currentYear}-${tempCurMonth}-${spanNextRow[i]}`)
                         }
                         daysBtw = Math.floor(Math.abs((eD.getTime() - sD.getTime()) / (1000 * 60 * 60 * 24)))
-                        var width = daysBtw * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, daysBtw+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
                         //push 0th row event banner
                         currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${startDay}`)
@@ -1574,9 +1559,8 @@ function placeEvents(events) {
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(spanNextRow[i + 1] - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is each brkPt day)
                         currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
@@ -1591,16 +1575,14 @@ function placeEvents(events) {
 
                     //last row
                     else {
-                        var width = Math.abs(endDay - breakPTArr[i]) * 7 + 7 //7vw is equal to about 200px on 1920px wide monitor; which is one grid box; +7 bc we want total days, not difference
                         //creating title div for monthview task
                         var tempDiv = document.createElement('div')
                         tempDiv.classList.add("task")
                         tempDiv.id = name
                         tempDiv.innerHTML = name
                         tempDiv.addEventListener('click', () => { generateDetailedView(events[searchEventTasks(events, name)]) })
-                        tempDiv.style.cssText = `width: ${width}vw;`
+                        calcBannerWidth(tempDiv, Math.abs(endDay - breakPTArr[i])+1)//calculates banner width by total days spanned
                         currentEventBannerDivs.push(tempDiv)
-                        tempDiv.style.cssText = `width: ${width}vw;`
 
                         //adding to banner dates array (here is last brkPt day)
                         currentEventBannerDates.push(`${tempCurYear}-${tempCurMonth}-${breakPTArr[i]}`)
@@ -2103,3 +2085,30 @@ function calcGridBoxHeight(year, month) {
         console.log("error: finding calendar-day div for height calculation")
     }
 }//end function calcGridBoxHeight
+
+function calcBannerWidthResize(){
+    let banners = document.getElementsByClassName("task")
+    if(banners.length == 0){
+        return //there are no banners to be resized
+    }
+    var gridBoxW = document.getElementsByClassName("calendar-day")[0].clientWidth 
+    var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+
+    for(let i=0; i<banners.length; i++){
+        let classList = banners[i].classList.split(' ')
+        let numDays = parseInt(classList[1])
+        var width = ((gridBoxW/viewPortW)*numDays - 40/viewPortW) //calculates how many days the banner should span across - 40px padding to grid box
+        banner.style.cssText = `width: ${width}vw;` //sets banner width according to viewport size
+    }
+}
+
+function calcBannerWidth(banner, numDays){
+    var gridBoxW = document.getElementsByClassName("calendar-day")[0].clientWidth 
+    var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    var width = ((gridBoxW/viewPortW)*numDays - 40/viewPortW) //calculates how many days the banner should span across - 40px padding to grid box
+    banner.style.cssText = `width: ${width}vw;` //sets banner width according to viewport size
+    banner.classList.add(`${numDays}`)//adding num days of event to banner classList for future use
+}
+
+//page listener for window Resize
+document.addEventListener('resize', calcBannerWidthResize())
