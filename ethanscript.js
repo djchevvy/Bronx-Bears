@@ -2103,7 +2103,7 @@ function calcBannerWidthResize(){
     if(banners.length == 0){
         return //there are no banners to be resized
     }
-    var gridBoxW = document.getElementsByClassName("calendar-day")[0].clientWidth 
+    var gridBoxW = document.getElementsByClassName("calendar-day")[0].offsetWidth
     var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
 
     for(let i=0; i<banners.length; i++){
@@ -2116,7 +2116,7 @@ function calcBannerWidthResize(){
 }
 
 function calcBannerWidth(banner, numDays){
-    var gridBoxW = document.getElementsByClassName("calendar-day")[0].clientWidth 
+    var gridBoxW = document.getElementsByClassName("calendar-day")[0].offsetWidth  //was .clientWidth
     var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
     //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 10/viewPortW)*100) //calculates how many days the banner should span across - 30px padding to grid box
     var width = gridBoxW*numDays - 10 //width of one grid box - 10px padding
