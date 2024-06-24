@@ -1711,18 +1711,19 @@ function placeEvents(events) {
                     if (casebEvent && !casebPrevEvent) {
                         let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()
                         //determine end date of current banner, and that day's index within the current week
-                        let numShorterEvents = 0 //initialize
+                        let numDisplacingEvents = 1 //initialize var to track number of events that span into Event to be Placed Day
                         //on the day we have a shorter banner that spans to banner we are placing, we want to know how many tasks exist on that day to know how many tasks can be placed above
                         for (let j = 0; j < taskChildren.length; j++) {
+                            //this should realistically check every day before banner to be placed to check for banner overlap
                             if (taskChildren[j].classList[1] <= curDayWeekInd + 1) {
-                                numShorterEvents++
+                                numDisplacingEvents++
                             }
                         }
                         //let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner also starts on this date
 
                         let year = parseDayBoxIdDate(startDate, true, false, false)
                         let month = parseDayBoxIdDate(startDate, false, true, false)
-                        let day = parseDayBoxIdDate(startDate, false, false, true) + taskChildren[taskChildren.length - 1].classList[1]
+                        let day = parseDayBoxIdDate(startDate, false, false, true) + parseInt(taskChildren[taskChildren.length - 1].classList[1])
                         let daysInCurentMonth = new Date(year, month, 0).getDate()
                         if (day > daysInCurentMonth && month === 12) {//edge case december
                             day = 1
@@ -1735,7 +1736,7 @@ function placeEvents(events) {
                             month++
                             daysInCurentMonth = new Date(year, month, 0).getDate()
                         }
-                        let numDays = Math.abs((currentEventBannerDivs[i].classList[1] - 1) + parseDayBoxIdDate(currentEventBannerDates[i], false, false, true) - (taskChildren[taskChildren.length - 1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true)) //number of days banner to place spans, mark as case b
+                        let numDays = Math.abs(((currentEventBannerDivs[i].classList[1] - 1) + parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)) - ((taskChildren[taskChildren.length - 1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true))) //number of days banner to place spans, mark as case b
                         //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
                         for (let j = 0; j < numDays; j++) {
                             day++
@@ -1750,7 +1751,7 @@ function placeEvents(events) {
                                 month++
                             }
                             if (document.getElementById(`${year}-${month}-${day}`) !== null) {
-                                document.getElementById(`${year}-${month}-${day}`).classList.add(`caseb_${numShorterEvents}`)//mark case 2 days so that on insertion we know to insert before monthnum div
+                                document.getElementById(`${year}-${month}-${day}`).classList.add(`caseb_${numDisplacingEvents}`)//mark case 2 days so that on insertion we know to insert before monthnum div
                             }
                         }
                     }
