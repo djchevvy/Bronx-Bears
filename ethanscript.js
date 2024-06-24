@@ -1729,7 +1729,7 @@ function placeEvents(events) {
                             let daysInCurentMonth = new Date(year, month, 0).getDate()
                             let numDays = parseInt(currentEventBannerDivs[i].classList[1]) //number of days banner to place spans, mark as case b
                             //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
-                            for (let j = 0; j < numDays; j++) {
+                            for (let j = 1; j < numDays; j++) {
                                 day++
                                 //month/year boundary check
                                 if (day > daysInCurentMonth && month == 12) {//edge case december
@@ -1748,7 +1748,7 @@ function placeEvents(events) {
                         }//end if
                     }
                     //case b PLACEMENT procedure
-                    if (casebEvent || casebPrevEvent) {
+                    if (casebPrevEvent) {
                         let id = `monthview-daynum-${parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)}`
                         let dayNumDiv = document.getElementById(id)//month grid day number div
                         //placing currentEventBanner
