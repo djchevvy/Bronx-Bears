@@ -1635,7 +1635,7 @@ function placeEvents(events) {
             let blankChildren = null //All blanks under current event date\
             let extraTask = null
             let parent = document.getElementById(currentEventBannerDates[i])//ARR NEEDED should hold the date in format mm-dd-yyyy, to refrence where the event banner should be placed for each line
-            
+
 
 
             //preventing null refrence errors when looking at children of parent
@@ -1671,506 +1671,501 @@ function placeEvents(events) {
                     if (taskChildren.length === 0 && blankChildren.length > 0 && !casebPrevEvent) {
                         let year = parseDayBoxIdDate(currentEventBannerDates[i], true, false, false)
                         let month = parseDayBoxIdDate(currentEventBannerDates[i], false, true, false)
-                        let day = parseDayBoxIdDate(currentEventBannerDates[i], false, false, true) + 1 //month boudary check needed here
-                        let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner also starts on this date
-                        if (day - Math.abs(7 - curDayWeekInd) > 0) {
-                            for (let j = day; j > day - Math.abs(7 - curDayWeekInd); j--) {
-                                if (document.getElementById(`${year}-${month}-${j}`).querySelectorAll(".task") > 0) { //need to account for month/year boundary here
-                                    //if current on page is shorter than banner we are trying to place, then CASE B is in effect
-                                    if (taskChildren[taskChildren.length - 1].offsetWidth < currentEventBannerDivs[i].offsetWidth) {
-                                        //this is the startDate of shorter banner currently on page
-                                        startDate = `${year}-${month}-${j}`
-                                    }//end if
-                                }//end outer if
-                            }//end for
-                            taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
-                            casebEvent = true // this is a current caseb event
-                        }
+                        let day = parseDayBoxIdDate(currentEventBannerDates[i], false, false, true) //month boudary check needed here
+                        let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner must start before this index as at this day, taskChildren.length === 0
+                        let daysInCurentMonth = new Date(year, month, 0).getDate()
+                        for (let j = 0; j <= curDayWeekInd; j++) {
+                            let tempDay = day - j 
+                            //if tempDay goes negative or zero, we have crossed into the previous month
+                            if(tempDay <= 0 && month === 1){ //edge case year boundary
+                                tempDay = new Date(year, 12, 0).getDate() //last day of decemeber
+                                year-- //index year down
+                            }
+                            else if(tempDay <= 0){ //normal case
+                                tempDay = new Date(year, month-1, 0).getDate() //last day of last month
+                                month--
+                            }
+                            //if current on page is shorter than banner we are trying to place, then CASE B is in effect
+                            if (document.getElementById(`${year}-${month}-${tempDay}`).querySelectorAll(".task") > 0) {
+                                taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
+                                //if the banner spans at least onto our currentEventBanner start day, then it's case 2
+                                if (taskChildren.classList[1] >= curDayWeekInd) {
+                                    //this is the startDate of shorter banner currently on page
+                                    startDate = `${year}-${month}-${tempDay}`
+                                    casebEvent = true // this is a current caseb event
+                                    break
+                                }//end if
+                            }//end outer if
+                        }//end for
                     }//end if taskChildren.length === 0 && blankChildren.length > 0 && !casebEvent
-                        //event banner starts on same day as event we are currently trying to place (startDate can simply be currentEventBannerDates[i])
-                        else if (taskChildren.length !== 0 && !casebPrevEvent) {
-                            startDate = currentEventBannerDates[i]
-                            casebEvent = true // this is a current caseb event
-                        }
 
-                        //CASE B COMPUTATION
-                        //compare lengths of banner that currently exists on page, and new banner we're trying to place
-                        //if current on page is shorter than banner we are trying to place, then CASE B is in effect
-                        if (casebEvent && !casebPrevEvent) {
-                            if (taskChildren[taskChildren.length - 1].offsetWidth < currentEventBannerDivs[i].offsetWidth) {
-                                //determine end date of current banner, and that day's index within the current week
-                                let numDays = parseInt(taskChildren[taskChildren.length - 1].classList[1]) //number of days banner on page spans
-                                let numShorterEvents = 0 //initialize
-                                for (let j = 0; j < taskChildren.length; j++) {
-                                    if (taskChildren[i].offsetWidth < currentEventBannerDivs[i].offsetWidth) {
-                                        numShorterEvents++
-                                    }
-                                }
-                                //let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner also starts on this date
+                    //event banner starts on same day as event we are currently trying to place (startDate can simply be currentEventBannerDates[i])
+                    else if (taskChildren.length !== 0 && !casebPrevEvent) {
+                        startDate = currentEventBannerDates[i]
+                        casebEvent = true // this is a current caseb event
+                    }
 
-                                let year = parseDayBoxIdDate(startDate, true, false, false)
-                                let month = parseDayBoxIdDate(startDate, false, true, false)
-                                let day = parseDayBoxIdDate(startDate, false, false, true) + 1 //month boudary check needed here
-                                for (let j = 0; j < numDays; j++) {
-                                    if (document.getElementById(`${year}-${month}-${day}`) !== null) {
-                                        document.getElementById(`${year}-${month}-${day}`).classList.add(`caseb_${numShorterEvents}`)//mark case 2 days so that on insertion we know to insert before div
-                                    }
-                                    day++
+                    //CASE B COMPUTATION
+                    //compare lengths of banner that currently exists on page, and new banner we're trying to place
+                    //if current on page is shorter than banner we are trying to place, then CASE B is in effect
+                    if (casebEvent && !casebPrevEvent) {
+                        if (taskChildren[taskChildren.length - 1].offsetWidth < currentEventBannerDivs[i].offsetWidth) { //might change this to taskChildren.classList[1] >= curDayWeekInd
+                            //determine end date of current banner, and that day's index within the current week
+                            let numDays = parseInt(taskChildren[taskChildren.length - 1].classList[1]) //number of days banner on page spans
+                            let numShorterEvents = 0 //initialize
+                            //on the day we have a shorter banner that spans to banner we are placing, we want to know how many tasks exist on that day to know how many tasks can be placed above
+                            for (let j = 0; j < taskChildren.length; j++) {
+                                if (taskChildren[j].offsetWidth < currentEventBannerDivs[i].offsetWidth) {
+                                    numShorterEvents++
                                 }
-                            }//end if
-                        }
-                        //case b PLACEMENT procedure
-                        if (casebEvent || casebPrevEvent) {
-                            let id = `monthview-daynum-${parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)}`
-                            let dayNumDiv = document.getElementById(id)
+                            }
+                            //let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner also starts on this date
+
+                            let year = parseDayBoxIdDate(startDate, true, false, false)
+                            let month = parseDayBoxIdDate(startDate, false, true, false)
+                            let day = parseDayBoxIdDate(startDate, false, false, true)//month boudary check needed here
+                            let daysInCurentMonth = new Date(year, month, 0).getDate()
+                            //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
+                            for (let j = 0; j < numDays; j++) {
+                                day++
+                                //month/year boundary check
+                                if(day > daysInCurentMonth && month == 12){//edge case december
+                                    day = 1
+                                    month = 1
+                                    year++
+                                }
+                                else if(day > daysInCurentMonth){//normal case
+                                    day = 1
+                                    month++
+                                }
+                                if (document.getElementById(`${year}-${month}-${day}`) !== null) {
+                                    document.getElementById(`${year}-${month}-${day}`).classList.add(`caseb_${numShorterEvents}`)//mark case 2 days so that on insertion we know to insert before monthnum div
+                                }
+                            }
+                        }//end if
+                    }
+                    //case b PLACEMENT procedure
+                    if (casebEvent || casebPrevEvent) {
+                        let id = `monthview-daynum-${parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)}`
+                        let dayNumDiv = document.getElementById(id)//month grid day number div
+                        if(dayNumDiv !== null){//error check
                             dayNumDiv.insertAdjacentElement("afterend", currentEventBannerDivs[i]) //inserts banner below the day number in that day grid box
-                            currentEventAdded = true //current event was added
-                            //index-- the # of events that fit in current day box
-                            const regex = /^caseb_(\d)$/
-                            let tokens = regex.exec(casebToken)
-                            //check if current day had 1 slot left for a case b event to be placed
-                            //if so remove that classlist marker
-                            if (parseInt(tokens[1]) - 1 <= 0) {
-                                parent.classList.remove(casebToken)
-                            }
-                            //else index the number of available caseb events on this day down 1 
-                            else {
-                                let newCasebToken = `${tokens[0]}${parseInt(tokens[1]) - 1}`
-                                parent.classList.remove(casebToken)
-                                parent.classList.add(newCasebToken)
-                            }
+                        currentEventAdded = true //current event was added
                         }
-                        //normal append child banner
+                        else{
+                            console.log("Error func placeEvents: CaseB event cannot find monthview num div")
+                        }
+            //This CODE below may need to be in an if conditoned on casebPrevEvent
+                        //index-- the # of events that fit in current day box
+                        const regex = /^caseb_(\d)$/
+                        let tokens = regex.exec(casebToken)
+                        //check if current day had 1 slot left for a case b event to be placed
+                        //if so remove that classlist marker
+                        if (parseInt(tokens[1]) - 1 <= 0) {
+                            parent.classList.remove(casebToken)
+                        }
+                        //else index the number of available caseb events on this day down 1 
                         else {
-                            parent.appendChild(currentEventBannerDivs[i])
-                            currentEventAdded = true //current event was added
+                            let newCasebToken = `${tokens[0]}${parseInt(tokens[1]) - 1}`
+                            parent.classList.remove(casebToken)
+                            parent.classList.add(newCasebToken)
                         }
-
                     }
-                    else if (taskChildren.length + blankChildren.length == numEventsPerDay && extraTask == null) {
-                        let threeDots = document.createElement('div')
-                        threeDots.id = "extra_Tasks"
-                        threeDots.innerHTML = "..."
-                        parent.appendChild(threeDots)//shows that a task was attempted to be added here, but was not for space preservation
-                        break //if first event banner of current event is not placed, break from current event
-                    }
+                    //normal append child banner
                     else {
-                        break //if first event banner of current event is not placed, break from current event
-                    }
-                }//end else
-
-                /* OLD extra TASKS "..." placement
-                //add task to corresponding date grid when no tasks are present at that location; children length 1 accounts for day# as a child of grid box
-                if (children.length == 1) {
-                    parent.appendChild(currentEventBannerDivs[i])
-                }
-    
-                //add task to corresponding date grid when 1-2 tasks are present at that location
-                else if (children.length > 1 && children.length < 4) {
-                    for (let i = 0; i < children.length; i++) {
-                        //set boolearn false if task we are trying to insert exists under current date grid on page
-                        if (children[i].id == name) {
-                            addTask = false
-                            break
-                        }
-                    }//end for
-    
-                    if (addTask) {
                         parent.appendChild(currentEventBannerDivs[i])
+                        currentEventAdded = true //current event was added
                     }
-                }//end else if
-    
-                //adds tasks as invisible elements after 3 tasks exist at that location
-                else if (children.length >= 4) {
-                    for (let i = 0; i < children.length; i++) {
-                        //set boolearn false if task we are trying to insert exists under current date grid on page
-                        if (children[i].id == name) {
-                            addTask = false
-                            break
-                        }
-                    }//end for
-    
-                    if (addTask) {
-                        parent.appendChild(currentEventBannerDivs[i])
-                    }
-    
+
                 }
-                //three dots "..." control for insertion
-                if (children.length > 4 && extraTaskBool == false) {
-                    parent.innerHTML += "<div id=\"extra_tasks\">...</div>"
+                else if (taskChildren.length + blankChildren.length == numEventsPerDay && extraTask == null) {
+                    let threeDots = document.createElement('div')
+                    threeDots.id = "extra_Tasks"
+                    threeDots.innerHTML = "..."
+                    parent.appendChild(threeDots)//shows that a task was attempted to be added here, but was not for space preservation
+                    break //if first event banner of current event is not placed, break from current event
                 }
-                //three dots "..." control for deletion and makes next in-line task visible
-                else if (extraTaskBool == true && children.length <= 5) {
-                    for (let i = 0; i < children.length; i++) {
-                        if (children[i].classList == "task inactive") {
-                            children[i].classList.remove("inactive")
-                            children[i].innerHTML = children[i].id
-                            break
-                        }
-                    }
-    
-                    for (let i = 0; i < children.length; i++) {
-                        if (children[i].id == "extra_tasks") {
-                            children[i].remove()
-                            break
-                        }
-                    }
-                }
-                */
-            }//end banner for
-            if (currentEventAdded) {
-                //blank placement
-                for (let i = 0; i < currentEventBlankDivsDates.length; i++) {
-                    let blankParent = document.getElementById(currentEventBlankDivsDates[i])
-                    if (blankParent == null) {
-                        console.log("error finding blank parent: func PLACE EVENTS")
-                        break
-                    }
-                    let tempChildren = blankParent.getElementsByTagName("div")
-                    //prevents overpopulation of grid box (number of tasks per day + day number + "..." extra tasks)
-                    if (tempChildren.length >= numEventsPerDay + 2) {
-                        break
-                    }
-                    //places blank
-                    let blank = document.createElement('div')
-                    blank.classList.add("monthview-blank")
-                    blankParent.appendChild(blank) //create styling in style sheet
-                }//end for
-            }//end if currentEventAdded
-
-        }//end for events.length
-    }//end func placeEvents
-
-    //PARAMETERS: year: full year# (str); month: current month # (int 1 indexed)
-    //RETURN: total days of current month in current year
-    //function takes in date(all ints, month=int,not 0 indexed), and returns that months total days
-    function getTotalDays(year, month) {
-        // "2024" "6"
-        let totalDays = -1 //error with total days calc
-        let numRows = 0
-        if (month == 2) {
-            numRows = getRowOfDate(months[month - 1], 28, year)
-            if (numRows != -1) {
-                totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
-            }
-        }
-        else if (month == 2 && year % 4 == 0) {
-            numRows = getRowOfDate(months[month - 1], 29, year) //leap year
-            if (numRows != -1) {
-                totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
-            }
-        }
-        else if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
-            numRows = getRowOfDate(months[month - 1], 31, year)
-            if (numRows != -1) {
-                totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
-            }
-        }
-        else {
-            numRows = getRowOfDate(months[month - 1], 30, year)
-            if (numRows != -1) {
-                totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
-            }
-        }
-
-        return totalDays
-    }//end func getTotalDays
-
-    //PARAMETERS: events: currentMonthTasks Task class OBJ arr; name: name of current task (str)
-    //RETURN:
-    //given an event name, the function will search for it in currentMonthTasks and return the index of that task. returns -1 if not found
-    function searchEventTasks(events, key) {
-        for (let i = 0; i < events.length; i++) {
-            var tempKey = events[i].getKey()
-            if (key === tempKey) {
-                return i
-            }
-        }
-
-        return -1
-    }//end func
-
-    //PARAMETERS: month: month in words eg. "May"; day: day# year: full year # endYear: default year, else full year # (str or int)
-    //RETURN: returns row index of curent date in it's respective month. (zero indexed)
-    //function takes in date in form month=strOfMonth, day=#, year=# 
-    //Does not work on nxt/prev month days that appear in current month 
-    function getRowOfDate(month, day, year, endYear = year) {
-        //edge case for january year change
-        if (year != endYear) {
-            return 0
-        }
-        var monthNum = 0 //NOT 0 INDEXED
-        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        for (let i = 0; i < months.length; i++) {
-            if (months[i] === month) {
-                monthNum = i + 1 //NOT 0 INDEXED
-                break
-            }
-        }
-        let monthDays = new Date(year, monthNum, 0).getDate();
-        let firstDayIndex = new Date(`${monthNum}-1-${year}`).getDay();
-        let daysInLastMonth = new Date(year, monthNum - 1, 0).getDate();
-        let totalDays = firstDayIndex + monthDays
-        let rowCount = Math.ceil(totalDays / 7)
-        let rowInd = 0
-        const firstDayOfLastMonth = new Date(year, monthNum - 1, 1).getDay()
-        const daysFromLastMonth = (firstDayOfLastMonth < 0) ? firstDayOfLastMonth + 7 : firstDayOfLastMonth;
-        if (day <= monthDays) {
-            for (let i = 0; i < rowCount * 7; i++) {
-                if (i == parseInt(day) + daysFromLastMonth) {
-                    break;
-                }
-                if (i % 7 == 0 && i != 0) {
-                    rowInd++
-                }
-            }
-        } else {
-            rowInd = -1 //for return on invalid dates
-        }
-
-        //returns -1 if calculations are incorrect
-        return rowInd
-    }//end func
-    //PARAMETERS: dateStr: start date; endDateStr: end date; format "May 9, 2024"
-    //RETURN: returns a merged string in format "STARTMONTH STARTDAY- ENDMONTH ENDDAY"
-    //dynamically generates detailedView date banner; takes paramters start and end date in format "May 9, 2024"
-    //returns a merged date string that show the span between months excluding the year
-    function mergeStart_EndDates(dateStr, endDateStr, sTime, eTime) {
-        var startDay = parseDay(dateStr)
-        var endDay = parseDay(endDateStr)
-        var startMonth = parseMonth(dateStr)
-        var endMonth = parseMonth(endDateStr)
-        //var startYear = parseYear(dateStr)
-        //var endYear = parseYear(endDateStr)
-        var spanDateStr = ""
-
-        //if the event has no associated times, or the event runs "ALL DAY", dont put time in date Banner
-        if (sTime === "" && eTime === "" || sTime === "00:00:00" && eTime == "23:59:59") {
-            //for multi day events we must check wether or not it spans multiple months
-            if (startMonth != endMonth) {
-                spanDateStr = startMonth + " " + startDay + " - " + endMonth + " " + endDay
-            }
-
-            //same month and day event
-            else if (startMonth == startMonth && startDay == endDay) {
-                spanDateStr = startMonth + " " + startDay
-            }
-
-            //same month different day event
-            else {
-                spanDateStr = startMonth + " " + startDay + " - " + endDay
-            }
-        }
-        //Event Has time fields
-        else {
-            var sT = new Date(`Jan 1, 2020 ${sTime}`);
-            var eT = new Date(`Jan 1, 2020 ${eTime}`);
-            var finalStartTime = ""
-            var finalEndTime = ""
-            var timeArr = []
-            timeArr.push(sT)
-            timeArr.push(eT)
-            for (let i = 0; i < timeArr.length; i++) {
-                var hours = timeArr[i].getHours(); // gives the value in 24 hours format
-                var AmOrPm = hours >= 12 ? 'pm' : 'am';
-                hours = (hours % 12) || 12;
-                var minutes = timeArr[i].getMinutes();
-                //appends zero to front
-                if (minutes === 0) {
-                    minutes = "00"
-                }//appends zero to front
-                else if (minutes < 10) {
-                    minutes = `0${minutes}`
-                }
-                //startTime
-                if (i == 0) {
-                    finalStartTime = hours + ":" + minutes + AmOrPm;
-                }
-                //endTime
-                if (i == 1) {
-                    finalEndTime = hours + ":" + minutes + AmOrPm;
-                }
-            }//end for
-
-
-            //for multi day events we must check wether or not it spans multiple months
-            if (startMonth != endMonth) {
-                spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endMonth + " " + endDay + " " + finalEndTime
-            }
-
-            //same month and day event
-            else if (startMonth == startMonth && startDay == endDay) {
-                spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + ` - ${finalEndTime}`
-            }
-
-            //same month different day event
-            else {
-                spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endDay + ` ${finalEndTime}`
-            }
-        }//end else
-
-        return spanDateStr
-    }//end func
-
-    //PARAMETERS: str: parses day # out of formatted str ex. "May 9, 2024"
-    //RETURN: returns day # as str
-    //function to parse day from date string in format "May 9, 2024"
-    function parseDay(str) {
-        const regex = /\b\d{1,2}\b/; //searches for one or two numbers surrounded by word boundaries ie " " and "," for our use case
-        //ex "May 25, 2024"
-
-        var tokens = regex.exec(str)
-        if (tokens[0] != null) {
-            var elem = tokens[0]
-            return elem
-        }
-        else {
-            console.log("Error Parsing string day: function parseDay(str)")
-            return -1
-        }
-
-    }
-    //PARAMETERS: str: parses month word out of formatted str ex. "May 9, 2024"
-    //RETURN: returns month str as str ex. "May"
-    //function to parse month from date string in format "May 9, 2024"
-    function parseMonth(str) {
-        // Define the regex pattern to match the month part of the date string
-        const monthPattern = /^[A-Za-z]+/;
-        // Apply the regex pattern to the input date string
-        const tokens = monthPattern.exec(str);
-        if (tokens[0] != null) {
-            var elem = tokens[0]
-            return elem
-        }
-        else {
-            console.log("Error Parsing string month: function parseMonth(str)")
-            return -1
-        }
-    }
-    //PARAMETERS: str: parses year # out of formatted str ex. "May 9, 2024"
-    //RETURN: returns year # as str ex. "2024"
-    //function to parse year from date string in format "May 9, 2024"
-    function parseYear(str) {
-        const yearPattern = /\b\d{4}\b/;
-
-        // Apply the regex pattern to the input date string
-        const tokens = yearPattern.exec(str);
-        if (tokens[0] != null) {
-            var elem = tokens[0]
-            return elem
-        }
-        else {
-            console.log("Error Parsing string Year: function parseYear(str)")
-            return -1
-        }
-    }
-    //PARAMETERS: str: parses Time # out of formatted str ex. "May 9, 2024 23:59:59"
-    //RETURN: returns Time # as str ex. "23:59:59"
-    //function to parse year from date string in format "mmm, dd yyyy TT:TT:TT"
-    function parseTime(str) {
-        if (str === null || str === "") {
-            //the event had no time
-            return ""
-        }
-        const regex = /\b(\d{2}:\d{2}:\d{2})\b/;
-        const token = regex.exec(str)
-
-        if (token) {
-            return token[0]
-        }
-        else {
-            //error parsing the time from passed string
-            console.log("Error Parsing string Time: function parseTime(str)")
-            return -1
-        }
-    }
-
-    //PARAMS: pass function string in date format yyyy-mm-dd and specify which element you want parsed by setting that bool true, and others false
-    //RETURN: Returns specified digits (int) from string in format 2024-6-21 yyyy-mm-dd
-    function parseDayBoxIdDate(str, boolYear = false, boolMonth = false, boolDay = false) {
-
-        const regex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-        const tokens = regex.exec(str)
-        console.log(tokens)
-
-        if (tokens) {
-            if (boolYear === true && boolMonth === false && boolDay === false) {
-                return parseInt(tokens[1])
-            }
-            else if (boolMonth === true && boolYear === false && boolDay === false) {
-                return parseInt(tokens[2])
-            }
-            else if (boolDay === true && boolYear === false && boolMonth == false) {
-                return parseInt(tokens[3])
-            }
-            else {
-                console.log("Error function parseDayBoxIdDate: Incorrect usage of bool parameters")
-            }
-        } else {
-            console.log("Error function parseDayBoxIdDate: no tokens extracted from passed string");
-        }
-    }//end function
-
-    //takes cms string format "May, 9 2024" and reformats to "2024-5-9"
-    //This format is used as ID for each grid box of the month view so we can id each day
-    function assembleMonthViewDateStr(str) {
-        let day = parseDay(str)
-        let month = parseMonth(str)
-        month = months.indexOf(month) + 1
-        let year = parseYear(str)
-        let finalStr = year + "-" + month + "-" + day
-        return finalStr
-    }
-
-    //Heap sort takes in an array and sorts the array by starting date
-    //passed array of task class objects, and returns a sorted array of those objects
-    //Upper Bounded Runtime: O(n^2) (due to bubble sort same day case)
-    function heapSort(eventsArr) {
-        /** Create a heap from an array of objects */
-        var list = [];
-        for (let i = 0; i < eventsArr.length; i++) {
-            if (list.length == 0) {
-                //insert root node
-                list.push(eventsArr[0]);
-            }
-            else {
-                //add new object and heapify array
-                list.push(eventsArr[i]);
-                for (let childInd = list.length - 1; childInd >= 1; childInd--) //heapify
-                {
-                    var parentInd = Math.floor((childInd - 1) / 2);
-
-                    //if parent is greater than child, swap
-                    //need to fetch date content here
-                    if (Date.parse(list[parentInd].getDate()) > Date.parse(list[childInd].getDate())) {
-                        //swap parent and child node
-                        var childElem = list.splice(childInd, 1, list[parentInd])[0]
-                        list[parentInd] = childElem
-                    }
+                else {
+                    break //if first event banner of current event is not placed, break from current event
                 }
             }//end else
-        }//end for loop
 
-        /** Continuously Remove the root from the Minheap to sort it*/
-        var sortedList = []  //sorted list is the final sorted list after removing all elemtents from list
-        var eventKey = 100 //this is the event key, it's used to differentiate tasks even if they have the exact same elements
-        while (list.length != 0) {
-            //removes from top
-            var root = list.shift()
-            root.setKey(eventKey)
-            sortedList.push(root)
-            eventKey++
+            /* OLD extra TASKS "..." placement
+            //add task to corresponding date grid when no tasks are present at that location; children length 1 accounts for day# as a child of grid box
+            if (children.length == 1) {
+                parent.appendChild(currentEventBannerDivs[i])
+            }
+ 
+            //add task to corresponding date grid when 1-2 tasks are present at that location
+            else if (children.length > 1 && children.length < 4) {
+                for (let i = 0; i < children.length; i++) {
+                    //set boolearn false if task we are trying to insert exists under current date grid on page
+                    if (children[i].id == name) {
+                        addTask = false
+                        break
+                    }
+                }//end for
+ 
+                if (addTask) {
+                    parent.appendChild(currentEventBannerDivs[i])
+                }
+            }//end else if
+ 
+            //adds tasks as invisible elements after 3 tasks exist at that location
+            else if (children.length >= 4) {
+                for (let i = 0; i < children.length; i++) {
+                    //set boolearn false if task we are trying to insert exists under current date grid on page
+                    if (children[i].id == name) {
+                        addTask = false
+                        break
+                    }
+                }//end for
+ 
+                if (addTask) {
+                    parent.appendChild(currentEventBannerDivs[i])
+                }
+ 
+            }
+            //three dots "..." control for insertion
+            if (children.length > 4 && extraTaskBool == false) {
+                parent.innerHTML += "<div id=\"extra_tasks\">...</div>"
+            }
+            //three dots "..." control for deletion and makes next in-line task visible
+            else if (extraTaskBool == true && children.length <= 5) {
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i].classList == "task inactive") {
+                        children[i].classList.remove("inactive")
+                        children[i].innerHTML = children[i].id
+                        break
+                    }
+                }
+ 
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i].id == "extra_tasks") {
+                        children[i].remove()
+                        break
+                    }
+                }
+            }
+            */
+        }//end banner for
+        if (currentEventAdded) {
+            //blank placement
+            for (let i = 0; i < currentEventBlankDivsDates.length; i++) {
+                let blankParent = document.getElementById(currentEventBlankDivsDates[i])
+                if (blankParent == null) {
+                    console.log("error finding blank parent: func PLACE EVENTS")
+                    break
+                }
+                let tempChildren = blankParent.getElementsByTagName("div")
+                //prevents overpopulation of grid box (number of tasks per day + day number + "..." extra tasks)
+                if (tempChildren.length >= numEventsPerDay + 2) {
+                    break
+                }
+                //places blank
+                let blank = document.createElement('div')
+                blank.classList.add("monthview-blank")
+                blankParent.appendChild(blank) //create styling in style sheet
+            }//end for
+        }//end if currentEventAdded
 
-            //now check if list is empty bc we cannot heapify an empty list
-            if (list.length == 0) {
+    }//end for events.length
+}//end func placeEvents
+
+//PARAMETERS: year: full year# (str); month: current month # (int 1 indexed)
+//RETURN: total days of current month in current year
+//function takes in date(all ints, month=int,not 0 indexed), and returns that months total days
+function getTotalDays(year, month) {
+    // "2024" "6"
+    let totalDays = -1 //error with total days calc
+    let numRows = 0
+    if (month == 2) {
+        numRows = getRowOfDate(months[month - 1], 28, year)
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
+    }
+    else if (month == 2 && year % 4 == 0) {
+        numRows = getRowOfDate(months[month - 1], 29, year) //leap year
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
+    }
+    else if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
+        numRows = getRowOfDate(months[month - 1], 31, year)
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
+    }
+    else {
+        numRows = getRowOfDate(months[month - 1], 30, year)
+        if (numRows != -1) {
+            totalDays = (numRows + 1) * 7 //gets the total number of days in a month grid
+        }
+    }
+
+    return totalDays
+}//end func getTotalDays
+
+//PARAMETERS: events: currentMonthTasks Task class OBJ arr; name: name of current task (str)
+//RETURN:
+//given an event name, the function will search for it in currentMonthTasks and return the index of that task. returns -1 if not found
+function searchEventTasks(events, key) {
+    for (let i = 0; i < events.length; i++) {
+        var tempKey = events[i].getKey()
+        if (key === tempKey) {
+            return i
+        }
+    }
+
+    return -1
+}//end func
+
+//PARAMETERS: month: month in words eg. "May"; day: day# year: full year # endYear: default year, else full year # (str or int)
+//RETURN: returns row index of curent date in it's respective month. (zero indexed)
+//function takes in date in form month=strOfMonth, day=#, year=# 
+//Does not work on nxt/prev month days that appear in current month 
+function getRowOfDate(month, day, year, endYear = year) {
+    //edge case for january year change
+    if (year != endYear) {
+        return 0
+    }
+    var monthNum = 0 //NOT 0 INDEXED
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    for (let i = 0; i < months.length; i++) {
+        if (months[i] === month) {
+            monthNum = i + 1 //NOT 0 INDEXED
+            break
+        }
+    }
+    let monthDays = new Date(year, monthNum, 0).getDate();
+    let firstDayIndex = new Date(`${monthNum}-1-${year}`).getDay();
+    let daysInLastMonth = new Date(year, monthNum - 1, 0).getDate();
+    let totalDays = firstDayIndex + monthDays
+    let rowCount = Math.ceil(totalDays / 7)
+    let rowInd = 0
+    const firstDayOfLastMonth = new Date(year, monthNum - 1, 1).getDay()
+    const daysFromLastMonth = (firstDayOfLastMonth < 0) ? firstDayOfLastMonth + 7 : firstDayOfLastMonth;
+    if (day <= monthDays) {
+        for (let i = 0; i < rowCount * 7; i++) {
+            if (i == parseInt(day) + daysFromLastMonth) {
                 break;
             }
+            if (i % 7 == 0 && i != 0) {
+                rowInd++
+            }
+        }
+    } else {
+        rowInd = -1 //for return on invalid dates
+    }
 
-            //add last element to the first index
-            var last = list.pop();
-            list.unshift(last)
+    //returns -1 if calculations are incorrect
+    return rowInd
+}//end func
+//PARAMETERS: dateStr: start date; endDateStr: end date; format "May 9, 2024"
+//RETURN: returns a merged string in format "STARTMONTH STARTDAY- ENDMONTH ENDDAY"
+//dynamically generates detailedView date banner; takes paramters start and end date in format "May 9, 2024"
+//returns a merged date string that show the span between months excluding the year
+function mergeStart_EndDates(dateStr, endDateStr, sTime, eTime) {
+    var startDay = parseDay(dateStr)
+    var endDay = parseDay(endDateStr)
+    var startMonth = parseMonth(dateStr)
+    var endMonth = parseMonth(endDateStr)
+    //var startYear = parseYear(dateStr)
+    //var endYear = parseYear(endDateStr)
+    var spanDateStr = ""
 
-            //heapify the rest of the array
+    //if the event has no associated times, or the event runs "ALL DAY", dont put time in date Banner
+    if (sTime === "" && eTime === "" || sTime === "00:00:00" && eTime == "23:59:59") {
+        //for multi day events we must check wether or not it spans multiple months
+        if (startMonth != endMonth) {
+            spanDateStr = startMonth + " " + startDay + " - " + endMonth + " " + endDay
+        }
+
+        //same month and day event
+        else if (startMonth == startMonth && startDay == endDay) {
+            spanDateStr = startMonth + " " + startDay
+        }
+
+        //same month different day event
+        else {
+            spanDateStr = startMonth + " " + startDay + " - " + endDay
+        }
+    }
+    //Event Has time fields
+    else {
+        var sT = new Date(`Jan 1, 2020 ${sTime}`);
+        var eT = new Date(`Jan 1, 2020 ${eTime}`);
+        var finalStartTime = ""
+        var finalEndTime = ""
+        var timeArr = []
+        timeArr.push(sT)
+        timeArr.push(eT)
+        for (let i = 0; i < timeArr.length; i++) {
+            var hours = timeArr[i].getHours(); // gives the value in 24 hours format
+            var AmOrPm = hours >= 12 ? 'pm' : 'am';
+            hours = (hours % 12) || 12;
+            var minutes = timeArr[i].getMinutes();
+            //appends zero to front
+            if (minutes === 0) {
+                minutes = "00"
+            }//appends zero to front
+            else if (minutes < 10) {
+                minutes = `0${minutes}`
+            }
+            //startTime
+            if (i == 0) {
+                finalStartTime = hours + ":" + minutes + AmOrPm;
+            }
+            //endTime
+            if (i == 1) {
+                finalEndTime = hours + ":" + minutes + AmOrPm;
+            }
+        }//end for
+
+
+        //for multi day events we must check wether or not it spans multiple months
+        if (startMonth != endMonth) {
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endMonth + " " + endDay + " " + finalEndTime
+        }
+
+        //same month and day event
+        else if (startMonth == startMonth && startDay == endDay) {
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + ` - ${finalEndTime}`
+        }
+
+        //same month different day event
+        else {
+            spanDateStr = startMonth + " " + startDay + ` ${finalStartTime}` + " - " + endDay + ` ${finalEndTime}`
+        }
+    }//end else
+
+    return spanDateStr
+}//end func
+
+//PARAMETERS: str: parses day # out of formatted str ex. "May 9, 2024"
+//RETURN: returns day # as str
+//function to parse day from date string in format "May 9, 2024"
+function parseDay(str) {
+    const regex = /\b\d{1,2}\b/; //searches for one or two numbers surrounded by word boundaries ie " " and "," for our use case
+    //ex "May 25, 2024"
+
+    var tokens = regex.exec(str)
+    if (tokens[0] != null) {
+        var elem = tokens[0]
+        return elem
+    }
+    else {
+        console.log("Error Parsing string day: function parseDay(str)")
+        return -1
+    }
+
+}
+//PARAMETERS: str: parses month word out of formatted str ex. "May 9, 2024"
+//RETURN: returns month str as str ex. "May"
+//function to parse month from date string in format "May 9, 2024"
+function parseMonth(str) {
+    // Define the regex pattern to match the month part of the date string
+    const monthPattern = /^[A-Za-z]+/;
+    // Apply the regex pattern to the input date string
+    const tokens = monthPattern.exec(str);
+    if (tokens[0] != null) {
+        var elem = tokens[0]
+        return elem
+    }
+    else {
+        console.log("Error Parsing string month: function parseMonth(str)")
+        return -1
+    }
+}
+//PARAMETERS: str: parses year # out of formatted str ex. "May 9, 2024"
+//RETURN: returns year # as str ex. "2024"
+//function to parse year from date string in format "May 9, 2024"
+function parseYear(str) {
+    const yearPattern = /\b\d{4}\b/;
+
+    // Apply the regex pattern to the input date string
+    const tokens = yearPattern.exec(str);
+    if (tokens[0] != null) {
+        var elem = tokens[0]
+        return elem
+    }
+    else {
+        console.log("Error Parsing string Year: function parseYear(str)")
+        return -1
+    }
+}
+//PARAMETERS: str: parses Time # out of formatted str ex. "May 9, 2024 23:59:59"
+//RETURN: returns Time # as str ex. "23:59:59"
+//function to parse year from date string in format "mmm, dd yyyy TT:TT:TT"
+function parseTime(str) {
+    if (str === null || str === "") {
+        //the event had no time
+        return ""
+    }
+    const regex = /\b(\d{2}:\d{2}:\d{2})\b/;
+    const token = regex.exec(str)
+
+    if (token) {
+        return token[0]
+    }
+    else {
+        //error parsing the time from passed string
+        console.log("Error Parsing string Time: function parseTime(str)")
+        return -1
+    }
+}
+
+//PARAMS: pass function string in date format yyyy-mm-dd and specify which element you want parsed by setting that bool true, and others false
+//RETURN: Returns specified digits (int) from string in format 2024-6-21 yyyy-mm-dd
+function parseDayBoxIdDate(str, boolYear = false, boolMonth = false, boolDay = false) {
+
+    const regex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+    const tokens = regex.exec(str)
+
+    if (tokens) {
+        if (boolYear === true && boolMonth === false && boolDay === false) {
+            return parseInt(tokens[1])
+        }
+        else if (boolMonth === true && boolYear === false && boolDay === false) {
+            return parseInt(tokens[2])
+        }
+        else if (boolDay === true && boolYear === false && boolMonth == false) {
+            return parseInt(tokens[3])
+        }
+        else {
+            console.log("Error function parseDayBoxIdDate: Incorrect usage of bool parameters")
+        }
+    } else {
+        console.log("Error function parseDayBoxIdDate: no tokens extracted from passed string");
+    }
+}//end function
+
+//takes cms string format "May, 9 2024" and reformats to "2024-5-9"
+//This format is used as ID for each grid box of the month view so we can id each day
+function assembleMonthViewDateStr(str) {
+    let day = parseDay(str)
+    let month = parseMonth(str)
+    month = months.indexOf(month) + 1
+    let year = parseYear(str)
+    let finalStr = year + "-" + month + "-" + day
+    return finalStr
+}
+
+//Heap sort takes in an array and sorts the array by starting date
+//passed array of task class objects, and returns a sorted array of those objects
+//Upper Bounded Runtime: O(n^2) (due to bubble sort same day case)
+function heapSort(eventsArr) {
+    /** Create a heap from an array of objects */
+    var list = [];
+    for (let i = 0; i < eventsArr.length; i++) {
+        if (list.length == 0) {
+            //insert root node
+            list.push(eventsArr[0]);
+        }
+        else {
+            //add new object and heapify array
+            list.push(eventsArr[i]);
             for (let childInd = list.length - 1; childInd >= 1; childInd--) //heapify
             {
                 var parentInd = Math.floor((childInd - 1) / 2);
@@ -2178,74 +2173,109 @@ function placeEvents(events) {
                 //if parent is greater than child, swap
                 //need to fetch date content here
                 if (Date.parse(list[parentInd].getDate()) > Date.parse(list[childInd].getDate())) {
-                    //swap parent and child node            
+                    //swap parent and child node
                     var childElem = list.splice(childInd, 1, list[parentInd])[0]
                     list[parentInd] = childElem
                 }
-            }//end for
-        }//end while
+            }
+        }//end else
+    }//end for loop
 
-        //sort same starting day events in order (Bubble Sort)
-        for (let i = 0; i < sortedList.length; i++) {
-            for (let childInd = 0; childInd < sortedList.length - i - 1; childInd++) {
-                //for correct array order when placing events
-                //edge case to place varying length events that start on same day in decending order of banner length by days
-                if (Date.parse(sortedList[childInd + 1].getDate()) === Date.parse(sortedList[childInd].getDate())) {
-                    if (Math.abs(Date.parse(sortedList[childInd].getDate()) - Date.parse(sortedList[childInd].getEndDate())) < Math.abs(Date.parse(sortedList[childInd + 1].getDate()) - Date.parse(sortedList[childInd + 1].getEndDate()))) {
-                        //swap parent and child node
-                        var childElem = sortedList.splice(childInd + 1, 1, sortedList[childInd])[0]
-                        sortedList[childInd] = childElem
-                    }
+    /** Continuously Remove the root from the Minheap to sort it*/
+    var sortedList = []  //sorted list is the final sorted list after removing all elemtents from list
+    var eventKey = 100 //this is the event key, it's used to differentiate tasks even if they have the exact same elements
+    while (list.length != 0) {
+        //removes from top
+        var root = list.shift()
+        root.setKey(eventKey)
+        sortedList.push(root)
+        eventKey++
+
+        //now check if list is empty bc we cannot heapify an empty list
+        if (list.length == 0) {
+            break;
+        }
+
+        //add last element to the first index
+        var last = list.pop();
+        list.unshift(last)
+
+        //heapify the rest of the array
+        for (let childInd = list.length - 1; childInd >= 1; childInd--) //heapify
+        {
+            var parentInd = Math.floor((childInd - 1) / 2);
+
+            //if parent is greater than child, swap
+            //need to fetch date content here
+            if (Date.parse(list[parentInd].getDate()) > Date.parse(list[childInd].getDate())) {
+                //swap parent and child node            
+                var childElem = list.splice(childInd, 1, list[parentInd])[0]
+                list[parentInd] = childElem
+            }
+        }//end for
+    }//end while
+
+    //sort same starting day events in order (Bubble Sort)
+    for (let i = 0; i < sortedList.length; i++) {
+        for (let childInd = 0; childInd < sortedList.length - i - 1; childInd++) {
+            //for correct array order when placing events
+            //edge case to place varying length events that start on same day in decending order of banner length by days
+            if (Date.parse(sortedList[childInd + 1].getDate()) === Date.parse(sortedList[childInd].getDate())) {
+                if (Math.abs(Date.parse(sortedList[childInd].getDate()) - Date.parse(sortedList[childInd].getEndDate())) < Math.abs(Date.parse(sortedList[childInd + 1].getDate()) - Date.parse(sortedList[childInd + 1].getEndDate()))) {
+                    //swap parent and child node
+                    var childElem = sortedList.splice(childInd + 1, 1, sortedList[childInd])[0]
+                    sortedList[childInd] = childElem
                 }
             }
         }
-
-
-        return sortedList;
-    }//end heapsort function
-
-    //PARAMS: Tasks arr, year, month
-    //RETURN: none
-    //Function takes currentYear, and currentMonth and calculates how large the grid box should be
-    //to fit within a 700px container div
-    function calcGridBoxHeight(year, month) {
-        let numrows = getTotalDays(year, month + 1) / 7 //numrows will always be divisible by 7
-        if (document.getElementsByClassName('calendar-day')[0] != null) {
-            let boxDivs = document.getElementsByClassName('calendar-day')
-            for (let i = 0; i < boxDivs.length; i++) {
-                boxDivs[i].style.height = `${700 / numrows}px` //this calculates the height for our day grid box
-            }
-        }
-        else {
-            console.log("error: finding calendar-day div for height calculation")
-        }
-    }//end function calcGridBoxHeight
-
-    function calcBannerWidthResize() {
-        let banners = document.getElementsByClassName("task")
-        if (banners.length == 0) {
-            return //there are no banners to be resized
-        }
-        var gridBoxW = document.getElementsByClassName("calendar-day")[0].offsetWidth
-        var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-
-        for (let i = 0; i < banners.length; i++) {
-            let classList = banners[i].classList
-            let numDays = parseInt(classList[1])
-            //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 40/viewPortW)*100) //calculates how many days the banner should span across - 40px padding to grid box
-            var width = gridBoxW * numDays - 10 //width of one grid box - 10px padding
-            banners[i].style.cssText = `width: ${width}px;` //sets banner width according to viewport size
-        }
     }
 
-    function calcBannerWidth(banner, numDays) {
-        var gridBoxW = document.getElementsByClassName("calendar-day")[0].offsetWidth  //was .clientWidth
-        var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
-        //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 10/viewPortW)*100) //calculates how many days the banner should span across - 30px padding to grid box
+
+    return sortedList;
+}//end heapsort function
+
+//PARAMS: Tasks arr, year, month
+//RETURN: none
+//Function takes currentYear, and currentMonth and calculates how large the grid box should be
+//to fit within a 700px container div
+function calcGridBoxHeight(year, month) {
+    let numrows = getTotalDays(year, month + 1) / 7 //numrows will always be divisible by 7
+    if (document.getElementsByClassName('calendar-day')[0] != null) {
+        let boxDivs = document.getElementsByClassName('calendar-day')
+        for (let i = 0; i < boxDivs.length; i++) {
+            boxDivs[i].style.height = `${700 / numrows}px` //this calculates the height for our day grid box
+        }
+    }
+    else {
+        console.log("error: finding calendar-day div for height calculation")
+    }
+}//end function calcGridBoxHeight
+
+function calcBannerWidthResize() {
+    let banners = document.getElementsByClassName("task")
+    if (banners.length == 0) {
+        return //there are no banners to be resized
+    }
+    var gridBoxW = document.getElementsByClassName("calendar-day")[0].offsetWidth
+    var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+
+    for (let i = 0; i < banners.length; i++) {
+        let classList = banners[i].classList
+        let numDays = parseInt(classList[1])
+        //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 40/viewPortW)*100) //calculates how many days the banner should span across - 40px padding to grid box
         var width = gridBoxW * numDays - 10 //width of one grid box - 10px padding
-        banner.style.cssText = `width: ${width}px;` //sets banner width according to viewport size
-        banner.classList.add(`${numDays}`)//adding num days of event to banner classList for future use
+        banners[i].style.cssText = `width: ${width}px;` //sets banner width according to viewport size
     }
+}
 
-    //page listener for window Resize
-    window.addEventListener('resize', calcBannerWidthResize, false)
+function calcBannerWidth(banner, numDays) {
+    var gridBoxW = document.getElementsByClassName("calendar-day")[0].offsetWidth  //was .clientWidth
+    var viewPortW = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    //var width = Math.floor(((gridBoxW/viewPortW)*numDays - 10/viewPortW)*100) //calculates how many days the banner should span across - 30px padding to grid box
+    var width = gridBoxW * numDays - 10 //width of one grid box - 10px padding
+    banner.style.cssText = `width: ${width}px;` //sets banner width according to viewport size
+    banner.classList.add(`${numDays}`)//adding num days of event to banner classList for future use
+}
+
+//page listener for window Resize
+window.addEventListener('resize', calcBannerWidthResize, false)
