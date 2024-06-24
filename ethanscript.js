@@ -1713,6 +1713,7 @@ function placeEvents(events) {
                         //determine end date of current banner, and that day's index within the current week
                         let numDisplacingEvents = 1 //initialize var to track number of events that span into Event to be Placed Day
                         //on the day we have a shorter banner that spans to banner we are placing, we want to know how many tasks exist on that day to know how many tasks can be placed above
+                        /*
                         for (let j = 0; j < taskChildren.length; j++) {
                             //this should realistically check every day before banner to be placed to check for banner overlap
                             if (taskChildren[j].classList[1] <= curDayWeekInd + 1) {
@@ -1720,7 +1721,7 @@ function placeEvents(events) {
                             }
                         }
                         //let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner also starts on this date
-
+                        */
                         let year = parseDayBoxIdDate(startDate, true, false, false)
                         let month = parseDayBoxIdDate(startDate, false, true, false)
                         let day = parseDayBoxIdDate(startDate, false, false, true) + parseInt(taskChildren[taskChildren.length - 1].classList[1])
