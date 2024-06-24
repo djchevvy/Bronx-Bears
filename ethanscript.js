@@ -1739,7 +1739,6 @@ function placeEvents(events) {
                         let numDays = Math.abs(((currentEventBannerDivs[i].classList[1] - 1) + parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)) - ((taskChildren[taskChildren.length - 1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true))) //number of days banner to place spans, mark as case b
                         //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
                         for (let j = 0; j < numDays; j++) {
-                            day++
                             //month/year boundary check
                             if (day > daysInCurentMonth && month == 12) {//edge case december
                                 day = 1
@@ -1753,6 +1752,7 @@ function placeEvents(events) {
                             if (document.getElementById(`${year}-${month}-${day}`) !== null) {
                                 document.getElementById(`${year}-${month}-${day}`).classList.add(`caseb_${numDisplacingEvents}`)//mark case 2 days so that on insertion we know to insert before monthnum div
                             }
+                            day++
                         }
                     }
                     //case b PLACEMENT procedure
