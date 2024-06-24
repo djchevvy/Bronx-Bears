@@ -1628,13 +1628,14 @@ function placeEvents(events) {
         //NEW BANNER PLACEMENT CODE
         //place banners
         let currentEventAdded = false //bool that indicates if the current event banner was added, if so we will add it's corresponding blanks
+        const numEventsPerDay = 2 //########----IMPORTANT----############## this variable controls the number of tasks allowed per day 
         for (let i = 0; i < currentEventBannerDivs.length; i++) {
             currentEventAdded = false
             let taskChildren = null //All Events under current date
             let blankChildren = null //All blanks under current event date\
             let extraTask = null
             let parent = document.getElementById(currentEventBannerDates[i])//ARR NEEDED should hold the date in format mm-dd-yyyy, to refrence where the event banner should be placed for each line
-            const numEventsPerDay = 2 //########----IMPORTANT----############## this variable controls the number of tasks allowed per day 
+            
 
 
             //preventing null refrence errors when looking at children of parent
