@@ -1687,11 +1687,11 @@ function placeEvents(events) {
                             }
                             //if current on page is shorter than banner we are trying to place, then CASE B is in effect
                             if (document.getElementById(`${year}-${month}-${tempDay}`).getElementsByClassName('task') > 0) {
+                                startDate = `${year}-${month}-${tempDay}`
                                 taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
                                 //if the banner spans at least onto our currentEventBanner start day, then it's case 2
                                 if (taskChildren[taskChildren.length - 1].classList[1] <= curDayWeekInd+1) {
                                     //this is the startDate of shorter banner currently on page
-                                    startDate = `${year}-${month}-${tempDay}`
                                     casebEvent = true // this is a current caseb event
                                     break
                                 }//end if
@@ -1725,11 +1725,22 @@ function placeEvents(events) {
 
                             let year = parseDayBoxIdDate(startDate, true, false, false)
                             let month = parseDayBoxIdDate(startDate, false, true, false)
-                            let day = parseDayBoxIdDate(startDate, false, false, true)//month boudary check needed here
+                            let day = parseDayBoxIdDate(startDate, false, false, true) + taskChildren[taskChildren.length-1].classList[1]
                             let daysInCurentMonth = new Date(year, month, 0).getDate()
-                            let numDays = parseInt(currentEventBannerDivs[i].classList[1]) //number of days banner to place spans, mark as case b
+                            if(day > daysInCurentMonth && month === 12){//edge case december
+                                day = 1
+                                month = 1
+                                year++
+                                daysInCurentMonth = new Date(year, month, 0).getDate()
+                            }
+                            else if(day > daysInCurentMonth){//normal case
+                                day = 1
+                                month++
+                                daysInCurentMonth = new Date(year, month, 0).getDate()
+                            }
+                            let numDays = Math.abs((currentEventBannerDivs[i].classList[1]-1) + parseDayBoxIdDate(currentEventBannerDivs[i], false, false, true) - (taskChildren[taskChildren.length-1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true)) //number of days banner to place spans, mark as case b
                             //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
-                            for (let j = 1; j < numDays; j++) {
+                            for (let j = 0; j < numDays; j++) {
                                 day++
                                 //month/year boundary check
                                 if (day > daysInCurentMonth && month == 12) {//edge case december
