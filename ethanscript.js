@@ -1690,7 +1690,7 @@ function placeEvents(events) {
                                 startDate = `${year}-${month}-${tempDay}`
                                 taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
                                 //if the start day of banner yet to be placed - the banner on page end day is greater than zero, then we know theres empty space above longer lower banner
-                                if ((currentEventBannerDivs[i].classList[1]-1) + parseDayBoxIdDate(currentEventBannerDivs[i], false, false, true) - (taskChildren[taskChildren.length-1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true) > 0) {
+                                if ((currentEventBannerDivs[i].classList[1]-1) + parseDayBoxIdDate(currentEventBannerDates[i], false, false, true) - (taskChildren[taskChildren.length-1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true) > 0) {
                                     //this is the startDate of shorter banner currently on page
                                     casebEvent = true // this is a current caseb event
                                     break
@@ -1738,7 +1738,7 @@ function placeEvents(events) {
                                 month++
                                 daysInCurentMonth = new Date(year, month, 0).getDate()
                             }
-                            let numDays = Math.abs((currentEventBannerDivs[i].classList[1]-1) + parseDayBoxIdDate(currentEventBannerDivs[i], false, false, true) - (taskChildren[taskChildren.length-1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true)) //number of days banner to place spans, mark as case b
+                            let numDays = Math.abs((currentEventBannerDivs[i].classList[1]-1) + parseDayBoxIdDate(currentEventBannerDates[i], false, false, true) - (taskChildren[taskChildren.length-1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true)) //number of days banner to place spans, mark as case b
                             //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
                             for (let j = 0; j < numDays; j++) {
                                 day++
