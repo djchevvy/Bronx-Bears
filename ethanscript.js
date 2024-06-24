@@ -1675,14 +1675,14 @@ function placeEvents(events) {
                         let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()//we know our previous banner must start before this index as at this day, taskChildren.length === 0
                         let daysInCurentMonth = new Date(year, month, 0).getDate()
                         for (let j = 0; j <= curDayWeekInd; j++) {
-                            let tempDay = day - j 
+                            let tempDay = day - j
                             //if tempDay goes negative or zero, we have crossed into the previous month
-                            if(tempDay <= 0 && month === 1){ //edge case year boundary
+                            if (tempDay <= 0 && month === 1) { //edge case year boundary
                                 tempDay = new Date(year, 12, 0).getDate() //last day of decemeber
                                 year-- //index year down
                             }
-                            else if(tempDay <= 0){ //normal case
-                                tempDay = new Date(year, month-1, 0).getDate() //last day of last month
+                            else if (tempDay <= 0) { //normal case
+                                tempDay = new Date(year, month - 1, 0).getDate() //last day of last month
                                 month--
                             }
                             //if current on page is shorter than banner we are trying to place, then CASE B is in effect
@@ -1729,12 +1729,12 @@ function placeEvents(events) {
                             for (let j = 0; j < numDays; j++) {
                                 day++
                                 //month/year boundary check
-                                if(day > daysInCurentMonth && month == 12){//edge case december
+                                if (day > daysInCurentMonth && month == 12) {//edge case december
                                     day = 1
                                     month = 1
                                     year++
                                 }
-                                else if(day > daysInCurentMonth){//normal case
+                                else if (day > daysInCurentMonth) {//normal case
                                     day = 1
                                     month++
                                 }
@@ -1748,30 +1748,34 @@ function placeEvents(events) {
                     if (casebEvent || casebPrevEvent) {
                         let id = `monthview-daynum-${parseDayBoxIdDate(currentEventBannerDates[i], false, false, true)}`
                         let dayNumDiv = document.getElementById(id)//month grid day number div
-                        if(dayNumDiv !== null){//error check
+                        //placing currentEventBanner
+                        if (dayNumDiv !== null) {//error check
                             dayNumDiv.insertAdjacentElement("afterend", currentEventBannerDivs[i]) //inserts banner below the day number in that day grid box
-                        currentEventAdded = true //current event was added
+                            currentEventAdded = true //current event was added
                         }
-                        else{
+                        else {
                             console.log("Error func placeEvents: CaseB event cannot find monthview num div")
                         }
-            //This CODE below may need to be in an if conditoned on casebPrevEvent
-                        //index-- the # of events that fit in current day box
-                        const regex = /^caseb_(\d)$/
-                        let tokens = regex.exec(casebToken)
-                        //check if current day had 1 slot left for a case b event to be placed
-                        //if so remove that classlist marker
-                        if (parseInt(tokens[1]) - 1 <= 0) {
-                            parent.classList.remove(casebToken)
+                        //if this is an already existing caseb day and casebToken is not empty
+                        if (casebPrevEvent && casebToken) {
+                            //index-- the # of events that fit in current day box
+                            const regex = /^caseb_(\d)$/
+                            let tokens = regex.exec(casebToken)
+                            //check if current day had 1 slot left for a case b event to be placed
+                            //if so remove that classlist marker
+                            if (parseInt(tokens[1]) - 1 <= 0) {
+                                parent.classList.remove(casebToken)
+                            }
+                            //else index the number of available caseb events on this day down 1 
+                            else {
+                                let newCasebToken = `${tokens[0]}${parseInt(tokens[1]) - 1}`
+                                parent.classList.remove(casebToken)
+                                parent.classList.add(newCasebToken)
+                            }
                         }
-                        //else index the number of available caseb events on this day down 1 
-                        else {
-                            let newCasebToken = `${tokens[0]}${parseInt(tokens[1]) - 1}`
-                            parent.classList.remove(casebToken)
-                            parent.classList.add(newCasebToken)
-                        }
+
                     }
-                    //normal append child banner
+                    //normal append banner as child
                     else {
                         parent.appendChild(currentEventBannerDivs[i])
                         currentEventAdded = true //current event was added
