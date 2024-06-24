@@ -2089,18 +2089,19 @@ function placeEvents(events) {
     //RETURN: Returns specified digits (int) from string in format 2024-6-21 yyyy-mm-dd
     function parseDayBoxIdDate(str, boolYear = false, boolMonth = false, boolDay = false) {
 
-        const regex = /^\d{4}-(\d{1,2})-\d{1,2}$/;
+        const regex = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
         const tokens = regex.exec(str)
+        console.log(tokens)
 
         if (tokens) {
-            if (boolYear === true) {
-                return parseInt(tokens[0])
-            }
-            else if (boolMonth === true) {
+            if (boolYear === true && boolMonth === false && boolDay === false) {
                 return parseInt(tokens[1])
             }
-            else if (boolDay === true) {
+            else if (boolMonth === true && boolYear === false && boolDay === false) {
                 return parseInt(tokens[2])
+            }
+            else if (boolDay === true && boolYear === false && boolMonth == false) {
+                return parseInt(tokens[3])
             }
             else {
                 console.log("Error function parseDayBoxIdDate: Incorrect usage of bool parameters")
