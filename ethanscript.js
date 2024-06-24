@@ -1689,8 +1689,8 @@ function placeEvents(events) {
                             if (document.getElementById(`${year}-${month}-${tempDay}`).getElementsByClassName('task').length > 0) {
                                 startDate = `${year}-${month}-${tempDay}`
                                 taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
-                                //if the banner spans at least onto our currentEventBanner start day, then it's case 2
-                                if (taskChildren[taskChildren.length - 1].classList[1] <= curDayWeekInd+1) {
+                                //if the start day of banner yet to be placed - the banner on page end day is greater than zero, then we know theres empty space above longer lower banner
+                                if ((currentEventBannerDivs[i].classList[1]-1) + parseDayBoxIdDate(currentEventBannerDivs[i], false, false, true) - (taskChildren[taskChildren.length-1].classList[1] - 1) + parseDayBoxIdDate(startDate, false, false, true) > 0) {
                                     //this is the startDate of shorter banner currently on page
                                     casebEvent = true // this is a current caseb event
                                     break
