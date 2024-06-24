@@ -1686,7 +1686,7 @@ function placeEvents(events) {
                                 month--
                             }
                             //if current on page is shorter than banner we are trying to place, then CASE B is in effect
-                            if (document.getElementById(`${year}-${month}-${tempDay}`).getElementsByClassName('task') > 0) {
+                            if (document.getElementById(`${year}-${month}-${tempDay}`).getElementsByClassName('task').length > 0) {
                                 startDate = `${year}-${month}-${tempDay}`
                                 taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
                                 //if the banner spans at least onto our currentEventBanner start day, then it's case 2
