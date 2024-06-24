@@ -1709,7 +1709,7 @@ function placeEvents(events) {
                     //compare lengths of banner that currently exists on page, and new banner we're trying to place
                     //if current on page is shorter than banner we are trying to place, then CASE B is in effect
                     if (casebEvent && !casebPrevEvent) {
-                        if (taskChildren[taskChildren.length - 1].offsetWidth < currentEventBannerDivs[i].offsetWidth) { //might change this to taskChildren.classList[1] >= curDayWeekInd
+                        if (taskChildren[taskChildren.length - 1].classList[1] >= curDayWeekInd) { //might change this to taskChildren.classList[1] >= curDayWeekInd
                             //determine end date of current banner, and that day's index within the current week
                             let numDays = parseInt(taskChildren[taskChildren.length - 1].classList[1]) //number of days banner on page spans
                             let numShorterEvents = 0 //initialize
