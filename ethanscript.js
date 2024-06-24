@@ -1689,7 +1689,7 @@ function placeEvents(events) {
                             if (document.getElementById(`${year}-${month}-${tempDay}`).querySelectorAll(".task") > 0) {
                                 taskChildren = document.getElementById(startDate).querySelectorAll(".task") //change taskChildren to date where event banner exists
                                 //if the banner spans at least onto our currentEventBanner start day, then it's case 2
-                                if (taskChildren.classList[1] >= curDayWeekInd) {
+                                if (taskChildren[taskChildren.length - 1].classList[1] <= curDayWeekInd+1) {
                                     //this is the startDate of shorter banner currently on page
                                     startDate = `${year}-${month}-${tempDay}`
                                     casebEvent = true // this is a current caseb event
@@ -1710,13 +1710,14 @@ function placeEvents(events) {
                     //if current on page is shorter than banner we are trying to place, then CASE B is in effect
                     if (casebEvent && !casebPrevEvent) {
                         let curDayWeekInd = new Date(currentEventBannerDates[i]).getDay()
-                        if (taskChildren[taskChildren.length - 1].classList[1] >= curDayWeekInd) { //might change this to taskChildren.classList[1] >= curDayWeekInd
+                        //if event on page spans to at least current day we are placing event
+                        if (taskChildren[taskChildren.length - 1].classList[1] <= curDayWeekInd+1) {
                             //determine end date of current banner, and that day's index within the current week
-                            let numDays = parseInt(taskChildren[taskChildren.length - 1].classList[1]) //number of days banner on page spans
+                            
                             let numShorterEvents = 0 //initialize
                             //on the day we have a shorter banner that spans to banner we are placing, we want to know how many tasks exist on that day to know how many tasks can be placed above
                             for (let j = 0; j < taskChildren.length; j++) {
-                                if (taskChildren[j].offsetWidth < currentEventBannerDivs[i].offsetWidth) {
+                                if (taskChildren[j].classList[1] <= curDayWeekInd+1) {
                                     numShorterEvents++
                                 }
                             }
@@ -1726,6 +1727,7 @@ function placeEvents(events) {
                             let month = parseDayBoxIdDate(startDate, false, true, false)
                             let day = parseDayBoxIdDate(startDate, false, false, true)//month boudary check needed here
                             let daysInCurentMonth = new Date(year, month, 0).getDate()
+                            let numDays = parseInt(currentEventBannerDivs[i].classList[1]) //number of days banner to place spans, mark as case b
                             //For loop marks the days where we can place events above a task that spans long below (ie CASE B)
                             for (let j = 0; j < numDays; j++) {
                                 day++
